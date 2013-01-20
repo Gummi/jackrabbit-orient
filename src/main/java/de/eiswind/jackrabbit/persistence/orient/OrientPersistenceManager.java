@@ -1,47 +1,33 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * (c) 2013 by Thomas  Kratz
  */
 package de.eiswind.jackrabbit.persistence.orient;
 
-import com.orientechnologies.orient.core.command.OCommandRequest;
 import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
+import com.orientechnologies.orient.core.exception.ODatabaseException;
+import com.orientechnologies.orient.core.metadata.schema.OClass;
+import com.orientechnologies.orient.core.metadata.schema.OProperty;
+import com.orientechnologies.orient.core.metadata.schema.OSchema;
+import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.query.OQuery;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
-import org.apache.jackrabbit.core.persistence.bundle.AbstractBundlePersistenceManager;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.BasedFileSystem;
+import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.fs.local.LocalFileSystem;
-import org.apache.jackrabbit.core.persistence.PMContext;
-import org.apache.jackrabbit.core.persistence.util.BLOBStore;
-import org.apache.jackrabbit.core.persistence.util.BundleBinding;
-import org.apache.jackrabbit.core.persistence.util.ErrorHandling;
-import org.apache.jackrabbit.core.persistence.util.FileSystemBLOBStore;
-import org.apache.jackrabbit.core.persistence.util.NodePropBundle;
-import org.apache.jackrabbit.core.persistence.util.Serializer;
 import org.apache.jackrabbit.core.id.NodeId;
 import org.apache.jackrabbit.core.id.PropertyId;
+import org.apache.jackrabbit.core.persistence.PMContext;
+import org.apache.jackrabbit.core.persistence.bundle.AbstractBundlePersistenceManager;
+import org.apache.jackrabbit.core.persistence.util.*;
 import org.apache.jackrabbit.core.state.ItemStateException;
 import org.apache.jackrabbit.core.state.NoSuchItemStateException;
 import org.apache.jackrabbit.core.state.NodeReferences;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
@@ -54,13 +40,11 @@ import java.util.List;
 
 /**
  * This is a generic persistence manager that stores the {@link NodePropBundle}s
- * in a filesystem.
+ * in a orient db.
  * <p/>
  * Configuration:<br>
  * <ul>
- * <li>&lt;param name="{@link #setBlobFSBlockSize(String) blobFSBlockSize}" value="0"/>
- * <li>&lt;param name="{@link #setMinBlobSize(String) minBlobSize}" value="4096"/>
- * <li>&lt;param name="{@link #setErrorHandling(String) errorHandling}" value=""/>
+ ** <li>&lt;param name="{@link #setErrorHandling(String) errorHandling}" value=""/>
  * </ul>
  */
 public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
@@ -71,6 +55,59 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     /** flag indicating if this manager was initialized */
     protected boolean initialized;
 
+    /** prefix for orient classnames */
+    protected String objectPrefix;
+
+    private String url;
+    private String user;
+    private String pass;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getPass() {
+        return pass;
+    }
+
+    public void setPass(String pass) {
+        this.pass = pass;
+    }
+
+    /** file system where BLOB data is stored */
+    protected OrientPersistenceManager.CloseableBLOBStore blobStore;
+
+
+    private int blobFSBlockSize;
+
+    /**
+     * the minimum size of a property until it gets written to the blob store
+
+     */
+    private int minBlobSize = 0x1000;
+
+    /**
+     * the filesystem where the items are stored
+     */
+    private FileSystem itemFs;
+
+
+    /**
+     * the bundle binding
+     */
+    protected BundleBinding binding;
 
 
     /**
@@ -83,8 +120,18 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      */
     private String name = super.toString();
     private OGraphDatabase database;
-    private ObjectMapper mapper;
 
+    private String bundleClassName;
+
+
+    public String getObjectPrefix() {
+        return objectPrefix;
+    }
+
+    public void setObjectPrefix(String objectPrefix) {
+        this.objectPrefix = objectPrefix;
+
+    }
 
     /**
      * Sets the error handling behaviour of this manager. See {@link ErrorHandling}
@@ -107,21 +154,64 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     /**
      * {@inheritDoc}
      */
+    @Override
+    protected BLOBStore getBlobStore() {
+        return blobStore;
+    }
+
+    public boolean useLocalFsBlobStore() {
+        return blobFSBlockSize == 0;
+    }
+    /**
+     * {@inheritDoc}
+     */
     public void init(PMContext context) throws Exception {
         if (initialized) {
             throw new IllegalStateException("already initialized");
         }
+
+
         super.init(context);
-        database = new OGraphDatabase("local:C:/temp/graph/graph");
-        database.open("admin", "admin");
+        // create item fs
+        itemFs = new BasedFileSystem(context.getFileSystem(), "items");
+
+        // create correct blob store
+        if (useLocalFsBlobStore()) {
+            LocalFileSystem blobFS = new LocalFileSystem();
+            blobFS.setRoot(new File(context.getHomeDir(), "blobs"));
+            blobFS.init();
+            blobStore = new OrientPersistenceManager.FSBlobStore(blobFS);
+        } else {
+            blobStore = new OrientPersistenceManager.FSBlobStore(itemFs);
+        }
+
+        // load namespaces
+        binding = new BundleBinding(errorHandling, blobStore, getNsIndex(), getNameIndex(), context.getDataStore());
+        binding.setMinBlobSize(minBlobSize);
+
+
+
+            database = new OGraphDatabase(url);
+            database.open(user,pass);
+
+
         this.name = context.getHomeDir().getName();
-
-
+        this.objectPrefix = this.bundleClassName;
+        OSchema schema = database.getMetadata().getSchema();
+        bundleClassName = objectPrefix + "Bundle";
+        OClass bundleClass = schema.getClass(bundleClassName);
+        if(bundleClass==null){
+               bundleClass= schema.createClass(bundleClassName);
+               OProperty id= bundleClass.createProperty("uuid", OType.STRING);
+               id.createIndex(OClass.INDEX_TYPE.UNIQUE) ;
+               schema.save();
+        }
 
 
 
         initialized = true;
     }
+
 
 
     /**
@@ -133,6 +223,10 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         }
 
         try {
+            blobStore.close();
+            blobStore = null;
+            itemFs.close();
+            itemFs = null;
             // close db
             database.close();
             super.close();
@@ -146,16 +240,14 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      */
     protected NodePropBundle loadBundle(NodeId id) throws ItemStateException {
         try {
-            String path = buildNodeFilePath(null, id).toString();
-            if (!itemFs.exists(path)) {
+            String uuid = id.toString();
+            ODocument doc = loadBundleDoc(uuid);
+            if(doc==null){
                 return null;
             }
-            InputStream in = itemFs.getInputStream(path);
-            try {
-                return binding.readBundle(in, id);
-            } finally {
-                IOUtils.closeQuietly(in);
-            }
+            BundleMapper mapper = new BundleMapper(doc, database);
+            NodePropBundle bundle = mapper.read();
+            return bundle;
         } catch (Exception e) {
             String msg = "failed to read bundle: " + id + ": " + e;
             log.error(msg);
@@ -205,10 +297,9 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      */
     protected synchronized void storeBundle(NodePropBundle bundle) throws ItemStateException {
         try {
-            ODocument vertex = database.createVertex();
-            StringWriter writer = new StringWriter();
-            mapper.writeValue(writer, bundle);
-            vertex.fromJSON(writer.toString());
+            ODocument vertex = new ODocument(bundleClassName);
+            BundleMapper mapper = new BundleMapper(vertex, database);
+            mapper.writePhase1(bundle);
             vertex.save();
 
         } catch (Exception e) {
@@ -224,19 +315,26 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     protected synchronized void destroyBundle(NodePropBundle bundle) throws ItemStateException {
         try {
             String uuid = bundle.getId().toString();
-            OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from cluster:OGraphVertex WHERE uuid = "+ uuid);
-            List<ODocument> result =database.query(query);
-            if(result.size()==0){
-                throw new NoSuchItemStateException(uuid +" not found");
+            ODocument result = loadBundleDoc(uuid);
+            if(result ==null){
+                throw new NoSuchItemStateException(uuid+" is missing");
             }
-            database.removeVertex(result.get(0)) ;
-
-
+            database.removeVertex(result) ;
         } catch (Exception e) {
             String msg = "failed to delete bundle: " + bundle.getId();
             OrientPersistenceManager.log.error(msg, e);
             throw new ItemStateException(msg, e);
         }
+    }
+
+    private ODocument loadBundleDoc(String uuid) {
+        OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from "+bundleClassName+" WHERE uuid = '"+ uuid+"'");
+        List<ODocument> result=  database.query(query);
+        if(result.size()==0){
+            return null;
+        }
+        // result must be unique since we have the index
+        return result.get(0);
     }
 
     /**
