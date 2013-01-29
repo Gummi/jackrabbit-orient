@@ -71,7 +71,7 @@ public class PersistenceManagerTest extends TestCase {
         manager.setUser("admin");
         manager.setPass("admin");
         manager.setObjectPrefix("Test");
-        manager.setCreateDB(true);
+        manager.setCreateDB(false);
         assertPersistenceManager(manager);
     }
 
