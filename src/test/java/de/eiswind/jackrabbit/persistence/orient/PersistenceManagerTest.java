@@ -67,11 +67,11 @@ public class PersistenceManagerTest extends TestCase {
 
     public void testOrientPersistenceManager() throws Exception {
         OrientPersistenceManager manager = new OrientPersistenceManager();
-        manager.setUrl("remote:localhost/graph");
+        manager.setUrl("memory:graph");
         manager.setUser("admin");
         manager.setPass("admin");
         manager.setObjectPrefix("Test");
-        manager.setCreateDB(false);
+        manager.setCreateDB(true);
         assertPersistenceManager(manager);
     }
 

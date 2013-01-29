@@ -13,6 +13,7 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.query.OQuery;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
+import com.orientechnologies.orient.core.tx.OTransaction;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.core.fs.BasedFileSystem;
 import org.apache.jackrabbit.core.fs.FileSystem;
@@ -143,7 +144,6 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     }
 
     private Map<NodeId, BundleMapper> documentMap = new HashMap<NodeId, BundleMapper>();
-    private Map<NodeId, NodePropBundle> bundleMap = new HashMap<NodeId, NodePropBundle>();
 
     /**
      * Sets the error handling behaviour of this manager. See {@link ErrorHandling}
@@ -234,13 +234,19 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     public synchronized void store(ChangeLog changeLog)
             throws ItemStateException {
         documentMap.clear();
-        bundleMap.clear();
-        database.begin();
+
+        database.begin(OTransaction.TXTYPE.OPTIMISTIC);
         super.store(changeLog);
         storeChildRefs();
+        try{
         database.commit();
+        } catch( RuntimeException x){
+            database.rollback();
+            log.error("TX rolled back "+x.getMessage());
+            throw x;
+        }
         documentMap.clear();
-        bundleMap.clear();
+
     }
 
     private void storeChildRefs() {
@@ -347,7 +353,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
             vertex.save();
             NodeId id = bundle.getId();
             // store this for phase2
-            bundleMap.put(id, bundle);
+
             documentMap.put(id, mapper);
 
         } catch (Exception e) {
@@ -367,7 +373,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
             if (result == null) {
                 throw new NoSuchItemStateException(uuid + " is missing");
             }
-            database.removeVertex(result);
+            result.delete();
         } catch (Exception e) {
             String msg = "failed to delete bundle: " + bundle.getId();
             OrientPersistenceManager.log.error(msg, e);
