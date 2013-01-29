@@ -2,9 +2,12 @@ package de.eiswind.jackrabbit.persistence.orient;
 
 import com.orientechnologies.orient.core.db.ODatabase;
 import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
+import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.query.OQuery;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.record.impl.ORecordBytes;
+import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.core.id.NodeId;
 import org.apache.jackrabbit.core.id.PropertyId;
@@ -42,21 +45,25 @@ public class BundleMapper {
 
     private ODocument doc;
     private OGraphDatabase database;
+    private NodePropBundle bundle;
+    private String bundleClassName;
 
-
-    public BundleMapper(ODocument doc, OGraphDatabase database) {
+    public BundleMapper(ODocument doc, OGraphDatabase database, String bundleClassName) {
+        this.bundleClassName = bundleClassName;
 
         this.doc = doc;
         this.database = database;
     }
 
-    public void writePhase1(NodePropBundle bundle) throws IOException {
+    public void writePhase1(NodePropBundle _bundle) throws IOException {
+        this.bundle = _bundle;
         doc.field("primaryType", writeName(bundle.getNodeTypeName()), OType.EMBEDDED);
         NodeId parentId = bundle.getParentId();
         if (parentId == null) {
             parentId = NULL_PARENT_ID;
         }
-        doc.field("uuid", parentId.toString());
+        doc.field("parentuuid", parentId.toString());
+        doc.field("uuid",bundle.getId().toString());
 
         doc.field("modCount", bundle.getModCount());
 
@@ -97,10 +104,14 @@ public class BundleMapper {
 
     public NodePropBundle read() {
         String uuid = doc.field("uuid", OType.STRING);
-        NodePropBundle bundle = new NodePropBundle(NodeId.valueOf(uuid));
+         bundle = new NodePropBundle(NodeId.valueOf(uuid));
 
-        String primaryTye = doc.field("primaryType", OType.STRING);
-        Name name = NameFactoryImpl.getInstance().create(primaryTye);
+        String parentUUID = doc.field("parentuuid",OType.STRING);
+        bundle.setParentId(NodeId.valueOf(parentUUID));
+
+        ODocument primaryTypeDoc = doc.field("primaryType", OType.EMBEDDED);
+
+        Name name = readName(primaryTypeDoc);
         bundle.setNodeTypeName(name);
 
         List<ODocument> mixinDocs = doc.field("mixinTypes", OType.EMBEDDEDLIST);
@@ -114,14 +125,33 @@ public class BundleMapper {
         for (ODocument pDoc : propertyDocs) {
             bundle.addProperty(readProperty(pDoc, bundle));
         }
-        // TODO implement refs
+        // read child refs
+        Set<OIdentifiable> egdes = database.getOutEdges(doc);
+        for(OIdentifiable edge : egdes){
+            ODocument edgeDoc = edge.getRecord();
+            ODocument nameDoc = edgeDoc.field("name", OType.EMBEDDED);
+            Name childname = readName(nameDoc);
+            String childuuid = edgeDoc.field("uuid", OType.STRING);
+            NodeId id = NodeId.valueOf(childuuid);
+            bundle.addChildNodeEntry(childname,id);
+
+        }
+        List<ODocument> sharedDocs = doc.field("sharedSet",  OType.EMBEDDEDLIST);
+        Set<NodeId> sharedSet = new HashSet<NodeId>();
+        for(ODocument sharedDoc :sharedDocs){
+            String shUuid = doc.field("uuid",OType.STRING);
+            NodeId shId = NodeId.valueOf(shUuid);
+            sharedSet.add(shId);
+        }
+
+        bundle.setSharedSet(sharedSet);
         // TODO read sharedSet
         return bundle;
     }
 
-    private NodePropBundle.PropertyEntry readProperty(ODocument pDoc, NodePropBundle bundle) {
+    private NodePropBundle.PropertyEntry readProperty(ODocument pDoc, NodePropBundle _bundle) {
         ODocument nameDoc = pDoc.field("name", OType.EMBEDDED);
-        NodePropBundle.PropertyEntry entry = new NodePropBundle.PropertyEntry(new PropertyId(bundle.getId(), readName(nameDoc)));
+        NodePropBundle.PropertyEntry entry = new NodePropBundle.PropertyEntry(new PropertyId(_bundle.getId(), readName(nameDoc)));
         Boolean multiValued = pDoc.field("multiValued", OType.BOOLEAN);
         entry.setMultiValued(multiValued);
         List<InternalValue> values = new ArrayList<InternalValue>() ;
@@ -248,5 +278,35 @@ public class BundleMapper {
 
         propDoc.field("values",valDocs,OType.EMBEDDEDLIST);
         return propDoc;
+    }
+
+    public void writePhase2(Map<NodeId,BundleMapper> documentMap) {
+           for(NodePropBundle.ChildNodeEntry child: bundle.getChildNodeEntries() ){
+               BundleMapper target = documentMap.get(child.getId());
+               ODocument targetDoc=null;
+               if(target==null){
+                   targetDoc= loadBundleDoc(child.getId().toString()) ;
+               } else {
+                   targetDoc=target.doc;
+               }
+               if(targetDoc ==null){
+                   throw new IllegalStateException("FATAL: Child doc not found in db "+child.getId().toString());
+               }
+               ODocument edge = database.createEdge(doc,targetDoc);
+               ODocument name = writeName(child.getName());
+               edge.field("name",name,OType.EMBEDDED);
+               edge.field("uuid",child.getId().toString(),OType.STRING);
+               edge.save();
+           }
+    }
+
+    private  ODocument loadBundleDoc(String uuid) {
+        OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from "+bundleClassName+" WHERE uuid = '"+ uuid+"'");
+        List<ODocument> result=  database.query(query);
+        if(result.size()==0){
+            return null;
+        }
+        // result must be unique since we have the index
+        return result.get(0);
     }
 }

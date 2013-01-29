@@ -22,6 +22,7 @@ import org.apache.jackrabbit.core.id.PropertyId;
 import org.apache.jackrabbit.core.persistence.PMContext;
 import org.apache.jackrabbit.core.persistence.bundle.AbstractBundlePersistenceManager;
 import org.apache.jackrabbit.core.persistence.util.*;
+import org.apache.jackrabbit.core.state.ChangeLog;
 import org.apache.jackrabbit.core.state.ItemStateException;
 import org.apache.jackrabbit.core.state.NoSuchItemStateException;
 import org.apache.jackrabbit.core.state.NodeReferences;
@@ -34,9 +35,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * This is a generic persistence manager that stores the {@link NodePropBundle}s
@@ -44,18 +43,24 @@ import java.util.List;
  * <p/>
  * Configuration:<br>
  * <ul>
- ** <li>&lt;param name="{@link #setErrorHandling(String) errorHandling}" value=""/>
+ * * <li>&lt;param name="{@link #setErrorHandling(String) errorHandling}" value=""/>
  * </ul>
  */
 public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
-    /** the default logger */
+    /**
+     * the default logger
+     */
     private static Logger log = LoggerFactory.getLogger(OrientPersistenceManager.class);
 
-    /** flag indicating if this manager was initialized */
+    /**
+     * flag indicating if this manager was initialized
+     */
     protected boolean initialized;
 
-    /** prefix for orient classnames */
+    /**
+     * prefix for orient classnames
+     */
     protected String objectPrefix;
 
     private String url;
@@ -86,7 +91,9 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         this.pass = pass;
     }
 
-    /** file system where BLOB data is stored */
+    /**
+     * file system where BLOB data is stored
+     */
     protected OrientPersistenceManager.CloseableBLOBStore blobStore;
 
 
@@ -94,7 +101,6 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
     /**
      * the minimum size of a property until it gets written to the blob store
-
      */
     private int minBlobSize = 0x1000;
 
@@ -133,6 +139,9 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
     }
 
+    private Map<NodeId, BundleMapper> documentMap = new HashMap<NodeId, BundleMapper>();
+    private Map<NodeId, NodePropBundle> bundleMap = new HashMap<NodeId, NodePropBundle>();
+
     /**
      * Sets the error handling behaviour of this manager. See {@link ErrorHandling}
      * for details about the flags.
@@ -145,6 +154,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
     /**
      * Returns the error handling configuration of this manager
+     *
      * @return the error handling configuration of this manager
      */
     public String getErrorHandling() {
@@ -162,6 +172,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     public boolean useLocalFsBlobStore() {
         return blobFSBlockSize == 0;
     }
+
     /**
      * {@inheritDoc}
      */
@@ -190,9 +201,8 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         binding.setMinBlobSize(minBlobSize);
 
 
-
-            database = new OGraphDatabase(url);
-            database.open(user,pass);
+        database = new OGraphDatabase(url);
+        database.open(user, pass);
 
 
         this.name = context.getHomeDir().getName();
@@ -200,18 +210,37 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         OSchema schema = database.getMetadata().getSchema();
         bundleClassName = objectPrefix + "Bundle";
         OClass bundleClass = schema.getClass(bundleClassName);
-        if(bundleClass==null){
-               bundleClass= schema.createClass(bundleClassName);
-               OProperty id= bundleClass.createProperty("uuid", OType.STRING);
-               id.createIndex(OClass.INDEX_TYPE.UNIQUE) ;
-               schema.save();
+        if (bundleClass == null) {
+            OClass vertexClass = schema.getClass("OGraphVertex");
+            bundleClass = schema.createClass(bundleClassName, vertexClass);
+            OProperty id = bundleClass.createProperty("uuid", OType.STRING);
+            id.createIndex(OClass.INDEX_TYPE.UNIQUE);
+            schema.save();
         }
-
 
 
         initialized = true;
     }
 
+    public synchronized void store(ChangeLog changeLog)
+            throws ItemStateException {
+        documentMap.clear();
+        bundleMap.clear();
+        database.begin();
+        super.store(changeLog);
+        storeChildRefs();
+        database.commit();
+        documentMap.clear();
+        bundleMap.clear();
+    }
+
+    private void storeChildRefs() {
+        for (NodeId id : documentMap.keySet()) {
+            BundleMapper mapper = documentMap.get(id);
+            mapper.writePhase2(documentMap);
+        }
+
+    }
 
 
     /**
@@ -242,10 +271,10 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         try {
             String uuid = id.toString();
             ODocument doc = loadBundleDoc(uuid);
-            if(doc==null){
+            if (doc == null) {
                 return null;
             }
-            BundleMapper mapper = new BundleMapper(doc, database);
+            BundleMapper mapper = new BundleMapper(doc, database, bundleClassName);
             NodePropBundle bundle = mapper.read();
             return bundle;
         } catch (Exception e) {
@@ -260,7 +289,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      * suitable for storing node states in a filesystem.
      *
      * @param buf buffer to append to or <code>null</code>
-     * @param id the id of the node
+     * @param id  the id of the node
      * @return the buffer with the appended data.
      */
     protected StringBuffer buildNodeFilePath(StringBuffer buf, NodeId id) {
@@ -278,7 +307,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      * suitable for storing reference states in a filesystem.
      *
      * @param buf buffer to append to or <code>null</code>
-     * @param id the id of the node
+     * @param id  the id of the node
      * @return the buffer with the appended data.
      */
     protected StringBuffer buildNodeReferencesFilePath(
@@ -297,10 +326,23 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      */
     protected synchronized void storeBundle(NodePropBundle bundle) throws ItemStateException {
         try {
-            ODocument vertex = new ODocument(bundleClassName);
-            BundleMapper mapper = new BundleMapper(vertex, database);
+            ODocument vertex = null;
+            if (bundle.isNew()) {
+
+                vertex = database.createVertex(bundleClassName);
+            } else {
+                vertex = loadBundleDoc(bundle.getId().toString());
+            }
+            if(vertex == null){
+                throw new IllegalStateException("FATAL: Tried to update non existing bundle"+bundle.getId().toString());
+            }
+            BundleMapper mapper = new BundleMapper(vertex, database, bundleClassName);
             mapper.writePhase1(bundle);
             vertex.save();
+            NodeId id = bundle.getId();
+            // store this for phase2
+            bundleMap.put(id, bundle);
+            documentMap.put(id, mapper);
 
         } catch (Exception e) {
             String msg = "failed to write bundle: " + bundle.getId();
@@ -316,10 +358,10 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         try {
             String uuid = bundle.getId().toString();
             ODocument result = loadBundleDoc(uuid);
-            if(result ==null){
-                throw new NoSuchItemStateException(uuid+" is missing");
+            if (result == null) {
+                throw new NoSuchItemStateException(uuid + " is missing");
             }
-            database.removeVertex(result) ;
+            database.removeVertex(result);
         } catch (Exception e) {
             String msg = "failed to delete bundle: " + bundle.getId();
             OrientPersistenceManager.log.error(msg, e);
@@ -328,9 +370,9 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     }
 
     private ODocument loadBundleDoc(String uuid) {
-        OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from "+bundleClassName+" WHERE uuid = '"+ uuid+"'");
-        List<ODocument> result=  database.query(query);
-        if(result.size()==0){
+        OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from " + bundleClassName + " WHERE uuid = '" + uuid + "'");
+        List<ODocument> result = database.query(query);
+        if (result.size() == 0) {
             return null;
         }
         // result must be unique since we have the index
@@ -433,6 +475,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
     /**
      * logs an sql exception
+     *
      * @param message
      * @param se
      */
