@@ -40,13 +40,16 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
+ * (C) 2013 by Thomas Kratz
+ *  this is experimental code. if you reuse it, you do so at your own risk
+ *  if you modify and/or or republish it, you must publish the original authors name with your source code.
+ */
+
+/**
  * This is a generic persistence manager that stores the {@link NodePropBundle}s
- * in a orient db.
+ * in an orient db datastore.
  * <p/>
- * Configuration:<br>
- * <ul>
- * * <li>&lt;param name="{@link #setErrorHandling(String) errorHandling}" value=""/>
- * </ul>
+ *
  */
 public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 

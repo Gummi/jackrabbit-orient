@@ -27,11 +27,13 @@ import java.math.BigDecimal;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
- * User: Thomas
- * Date: 20/01/13
- * Time: 07:11
- * To change this template use File | Settings | File Templates.
+ * (C) 2013 by Thomas Kratz
+ *  this is experimental code. if you reuse it, you do at your own risk
+ *  if you modify and/or or republish it, you must publish the original authors name with your source code.
+ */
+
+/**
+ * Takes care of mapping the NodePropBundles to OrientDB Documents and back
  */
 public class BundleMapper {
 
