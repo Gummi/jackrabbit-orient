@@ -70,6 +70,8 @@ public class PersistenceManagerTest extends TestCase {
         manager.setUrl("remote:localhost/graph");
         manager.setUser("admin");
         manager.setPass("admin");
+        manager.setObjectPrefix("Test");
+        manager.setCreateDB(true);
         assertPersistenceManager(manager);
     }
 
