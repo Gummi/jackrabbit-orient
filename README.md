@@ -12,6 +12,8 @@ child relations are created as edges, so the the jcr tree structure is reflected
 
 room for improvement may be in the way the references get stored.
 
+following is an simple example how the nodes get stored in the db
+
 ```json
 {
   "result": [{
