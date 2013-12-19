@@ -4,8 +4,9 @@
 package de.eiswind.jackrabbit.persistence.orient;
 
 import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
-import com.orientechnologies.orient.core.exception.ODatabaseException;
+import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.exception.OStorageException;
+import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OProperty;
 import com.orientechnologies.orient.core.metadata.schema.OSchema;
@@ -14,11 +15,8 @@ import com.orientechnologies.orient.core.query.OQuery;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import com.orientechnologies.orient.core.tx.OTransaction;
-import org.apache.commons.io.IOUtils;
-import org.apache.jackrabbit.core.fs.BasedFileSystem;
 import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemException;
-import org.apache.jackrabbit.core.fs.local.LocalFileSystem;
 import org.apache.jackrabbit.core.id.NodeId;
 import org.apache.jackrabbit.core.id.PropertyId;
 import org.apache.jackrabbit.core.persistence.PMContext;
@@ -28,14 +26,9 @@ import org.apache.jackrabbit.core.state.ChangeLog;
 import org.apache.jackrabbit.core.state.ItemStateException;
 import org.apache.jackrabbit.core.state.NoSuchItemStateException;
 import org.apache.jackrabbit.core.state.NodeReferences;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -69,9 +62,9 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     protected String objectPrefix;
 
     private String url;
-    private String user;
-    private String pass;
-    private boolean createDB;
+    private String user="admin";
+    private String pass="admin";
+    private boolean createDB = true;
 
     public String getUrl() {
         return url;
@@ -79,6 +72,15 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getSchemaObjectPrefix() {
+        return objectPrefix;
+    }
+
+    public void setSchemaObjectPrefix(String objectPrefix) {
+        this.objectPrefix = objectPrefix;
+
     }
 
     public String getUser() {
@@ -196,6 +198,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
 
         database = new OGraphDatabase(url);
+
         try {
             database.open(user, pass);
         } catch (OStorageException x) {
@@ -214,7 +217,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         bundleClassName = objectPrefix + "Bundle";
         refsClassName = objectPrefix + "Refs";
         OClass bundleClass = schema.getClass(bundleClassName);
-        OClass vertexClass = schema.getClass("OGraphVertex");
+        OClass vertexClass = schema.getClass("V");
         if (bundleClass == null) {
 
             bundleClass = schema.createClass(bundleClassName, vertexClass);
@@ -385,13 +388,14 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     }
 
     private ODocument loadBundleDoc(String uuid) {
-        OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from " + bundleClassName + " WHERE uuid = '" + uuid + "'");
-        List<ODocument> result = database.query(query);
-        if (result.size() == 0) {
+        OIndex<OIdentifiable> index = ( OIndex<OIdentifiable> )database.getMetadata().getIndexManager().getIndex(bundleClassName+".uuid");
+        OIdentifiable id =index.get(uuid);
+        if(id!=null){
+            return id.getRecord();
+        } else {
             return null;
         }
-        // result must be unique since we have the index
-        return result.get(0);
+
     }
 
     private ODocument loadRefsDoc(String targetuuid) {

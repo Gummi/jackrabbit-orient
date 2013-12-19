@@ -1,17 +1,14 @@
 package de.eiswind.jackrabbit.persistence.orient;
 
-import com.orientechnologies.orient.core.db.ODatabase;
 import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
+import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import com.orientechnologies.orient.core.query.OQuery;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.record.impl.ORecordBytes;
-import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.core.id.NodeId;
 import org.apache.jackrabbit.core.id.PropertyId;
-import org.apache.jackrabbit.core.persistence.util.BundleBinding;
 import org.apache.jackrabbit.core.persistence.util.NodePropBundle;
 import org.apache.jackrabbit.core.value.InternalValue;
 import org.apache.jackrabbit.spi.Name;
@@ -65,8 +62,8 @@ public class BundleMapper {
             parentId = NULL_PARENT_ID;
         }
         doc.field("parentuuid", parentId.toString());
-        doc.field("uuid",bundle.getId().toString());
-
+        doc.field("uuid", bundle.getId().toString());
+//        System.out.println("Wrote " + bundle.getId());
         doc.field("modCount", bundle.getModCount());
 
         List<ODocument> mixinDocs = new ArrayList<ODocument>();
@@ -106,9 +103,9 @@ public class BundleMapper {
 
     public NodePropBundle read() {
         String uuid = doc.field("uuid", OType.STRING);
-         bundle = new NodePropBundle(NodeId.valueOf(uuid));
+        bundle = new NodePropBundle(NodeId.valueOf(uuid));
 
-        String parentUUID = doc.field("parentuuid",OType.STRING);
+        String parentUUID = doc.field("parentuuid", OType.STRING);
         bundle.setParentId(NodeId.valueOf(parentUUID));
 
         ODocument primaryTypeDoc = doc.field("primaryType", OType.EMBEDDED);
@@ -124,24 +121,26 @@ public class BundleMapper {
         bundle.setMixinTypeNames(mixins);
 
         List<ODocument> propertyDocs = doc.field("properties", OType.EMBEDDEDLIST);
-        for (ODocument pDoc : propertyDocs) {
-            bundle.addProperty(readProperty(pDoc, bundle));
+        if (propertyDocs != null) {
+            for (ODocument pDoc : propertyDocs) {
+                bundle.addProperty(readProperty(pDoc, bundle));
+            }
         }
         // read child refs
         Set<OIdentifiable> egdes = database.getOutEdges(doc);
-        for(OIdentifiable edge : egdes){
+        for (OIdentifiable edge : egdes) {
             ODocument edgeDoc = edge.getRecord();
             ODocument nameDoc = edgeDoc.field("name", OType.EMBEDDED);
             Name childname = readName(nameDoc);
             String childuuid = edgeDoc.field("uuid", OType.STRING);
             NodeId id = NodeId.valueOf(childuuid);
-            bundle.addChildNodeEntry(childname,id);
+            bundle.addChildNodeEntry(childname, id);
 
         }
-        List<ODocument> sharedDocs = doc.field("sharedSet",  OType.EMBEDDEDLIST);
+        List<ODocument> sharedDocs = doc.field("sharedSet", OType.EMBEDDEDLIST);
         Set<NodeId> sharedSet = new HashSet<NodeId>();
-        for(ODocument sharedDoc :sharedDocs){
-            String shUuid = doc.field("uuid",OType.STRING);
+        for (ODocument sharedDoc : sharedDocs) {
+            String shUuid = doc.field("uuid", OType.STRING);
             NodeId shId = NodeId.valueOf(shUuid);
             sharedSet.add(shId);
         }
@@ -156,52 +155,54 @@ public class BundleMapper {
         NodePropBundle.PropertyEntry entry = new NodePropBundle.PropertyEntry(new PropertyId(_bundle.getId(), readName(nameDoc)));
         Boolean multiValued = pDoc.field("multiValued", OType.BOOLEAN);
         entry.setMultiValued(multiValued);
-        List<InternalValue> values = new ArrayList<InternalValue>() ;
+        List<InternalValue> values = new ArrayList<InternalValue>();
         List<ODocument> valDocs = pDoc.field("properties", OType.EMBEDDEDLIST);
-        for (ODocument vDoc : valDocs) {
-             int type = vDoc.field("type",OType.INTEGER);
-             switch(type){
-                 case PropertyType.BINARY:
-                     Boolean embedded = vDoc.field("embedded",OType.BOOLEAN);
-                     if(embedded){
-                          values.add(InternalValue.create((byte[])vDoc.field("value",OType.BINARY)));
-                     }  else{
-                         ORecordBytes bytes = vDoc.field("value",OType.LINK) ;
+        if (valDocs != null) {
+            for (ODocument vDoc : valDocs) {
+                int type = vDoc.field("type", OType.INTEGER);
+                switch (type) {
+                    case PropertyType.BINARY:
+                        Boolean embedded = vDoc.field("embedded", OType.BOOLEAN);
+                        if (embedded) {
+                            values.add(InternalValue.create((byte[]) vDoc.field("value", OType.BINARY)));
+                        } else {
+                            ORecordBytes bytes = vDoc.field("value", OType.LINK);
 
-                         values.add(InternalValue.create(bytes.toStream()));
-                     }
-                     break;
-                 case PropertyType.DOUBLE:
+                            values.add(InternalValue.create(bytes.toStream()));
+                        }
+                        break;
+                    case PropertyType.DOUBLE:
 
-                     values.add(InternalValue.create((Double)vDoc.field(VALUE, OType.DOUBLE)));
-                     break;
+                        values.add(InternalValue.create((Double) vDoc.field(VALUE, OType.DOUBLE)));
+                        break;
 
-                 case PropertyType.DECIMAL:
-                     values.add(InternalValue.create((BigDecimal)vDoc.field(VALUE, OType.DECIMAL)));
-                     break;
-                 case PropertyType.LONG:
-                     values.add(InternalValue.create((Long)vDoc.field(VALUE, OType.LONG)));
-                     break;
-                 case PropertyType.BOOLEAN:
-                     values.add(InternalValue.create((Boolean)vDoc.field(VALUE, OType.BOOLEAN)));
-                     break;
+                    case PropertyType.DECIMAL:
+                        values.add(InternalValue.create((BigDecimal) vDoc.field(VALUE, OType.DECIMAL)));
+                        break;
+                    case PropertyType.LONG:
+                        values.add(InternalValue.create((Long) vDoc.field(VALUE, OType.LONG)));
+                        break;
+                    case PropertyType.BOOLEAN:
+                        values.add(InternalValue.create((Boolean) vDoc.field(VALUE, OType.BOOLEAN)));
+                        break;
 
-                 case PropertyType.NAME:
-                     ODocument nDoc = vDoc.field(VALUE,OType.EMBEDDED);
-                     values.add(InternalValue.create(readName(nDoc)));
-                     break;
+                    case PropertyType.NAME:
+                        ODocument nDoc = vDoc.field(VALUE, OType.EMBEDDED);
+                        values.add(InternalValue.create(readName(nDoc)));
+                        break;
 
-                 case PropertyType.WEAKREFERENCE:
-                 case PropertyType.REFERENCE:
-                     //must be handled later by referenceresolver
-                     break;
+                    case PropertyType.WEAKREFERENCE:
+                    case PropertyType.REFERENCE:
+                        //must be handled later by referenceresolver
+                        break;
 
-                 case PropertyType.DATE:
-                     values.add(InternalValue.create((Calendar)vDoc.field(VALUE, OType.DATETIME)));
-                     break;
-                 default:
-                     values.add(InternalValue.create((String)vDoc.field(VALUE,OType.STRING)));
-             }
+                    case PropertyType.DATE:
+                        values.add(InternalValue.create((Calendar) vDoc.field(VALUE, OType.DATETIME)));
+                        break;
+                    default:
+                        values.add(InternalValue.create((String) vDoc.field(VALUE, OType.STRING)));
+                }
+            }
         }
         entry.setValues(values.toArray(new InternalValue[]{}));
         return entry;
@@ -255,7 +256,7 @@ public class BundleMapper {
                         break;
 
                     case PropertyType.NAME:
-                        valDoc.field(VALUE, writeName(val.getName()),OType.EMBEDDED);
+                        valDoc.field(VALUE, writeName(val.getName()), OType.EMBEDDED);
                         break;
 
                     case PropertyType.WEAKREFERENCE:
@@ -278,37 +279,63 @@ public class BundleMapper {
             valDocs.add(valDoc);
         }
 
-        propDoc.field("values",valDocs,OType.EMBEDDEDLIST);
+        propDoc.field("values", valDocs, OType.EMBEDDEDLIST);
         return propDoc;
     }
 
-    public void writePhase2(Map<NodeId,BundleMapper> documentMap) {
-           for(NodePropBundle.ChildNodeEntry child: bundle.getChildNodeEntries() ){
-               BundleMapper target = documentMap.get(child.getId());
-               ODocument targetDoc=null;
-               if(target==null){
-                   targetDoc= loadBundleDoc(child.getId().toString()) ;
-               } else {
-                   targetDoc=target.doc;
-               }
-               if(targetDoc ==null){
-                   throw new IllegalStateException("FATAL: Child doc not found in db "+child.getId().toString());
-               }
-               ODocument edge = database.createEdge(doc,targetDoc);
-               ODocument name = writeName(child.getName());
-               edge.field("name",name,OType.EMBEDDED);
-               edge.field("uuid",child.getId().toString(),OType.STRING);
-               edge.save();
-           }
+    public void writePhase2(Map<NodeId, BundleMapper> documentMap) {
+        for (NodePropBundle.ChildNodeEntry child : bundle.getChildNodeEntries()) {
+            BundleMapper target = documentMap.get(child.getId());
+            ODocument targetDoc = null;
+            if (target == null) {
+                targetDoc = loadBundleDoc(child.getId().toString());
+            } else {
+                targetDoc = target.doc;
+            }
+            if (targetDoc == null) {
+                targetDoc = createChild(child);
+                if (targetDoc == null) {
+                    throw new IllegalStateException("FATAL: Child doc not found in db " + child.getId().toString());
+                }
+            }
+            ODocument edge = database.createEdge(doc, targetDoc);
+            ODocument name = writeName(child.getName());
+            edge.field("name", name, OType.EMBEDDED);
+            edge.field("uuid", child.getId().toString(), OType.STRING);
+            edge.save();
+        }
     }
 
-    private  ODocument loadBundleDoc(String uuid) {
-        OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from "+bundleClassName+" WHERE uuid = '"+ uuid+"'");
-        List<ODocument> result=  database.query(query);
-        if(result.size()==0){
+    protected synchronized ODocument createChild(NodePropBundle.ChildNodeEntry child) {
+        try {
+            ODocument doc = null;
+
+            doc = database.createVertex(bundleClassName);
+            doc.field("primaryType", writeName(child.getName()), OType.EMBEDDED);
+            NodeId parentId = bundle.getId();
+            if (parentId == null) {
+                parentId = NULL_PARENT_ID;
+            }
+            doc.field("parentuuid", parentId.toString());
+            doc.field("uuid", child.getId().toString());
+
+            doc.save();
+            return doc;
+
+        } catch (Exception e) {
+            String msg = "failed to write bundle: " + bundle.getId();
+            log.error(msg, e);
             return null;
         }
-        // result must be unique since we have the index
-        return result.get(0);
+    }
+
+    private ODocument loadBundleDoc(String uuid) {
+        OIndex<OIdentifiable> index = (OIndex<OIdentifiable>) database.getMetadata().getIndexManager().getIndex(bundleClassName + ".uuid");
+        OIdentifiable id = index.get(uuid);
+        if (id != null) {
+            return id.getRecord();
+        } else {
+            return null;
+        }
     }
 }
