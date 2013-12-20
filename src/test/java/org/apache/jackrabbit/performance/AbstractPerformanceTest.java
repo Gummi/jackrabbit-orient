@@ -86,8 +86,8 @@ public abstract class AbstractPerformanceTest {
         runTest(new SmallFileWriteTest(), name, conf);
         runTest(new BigFileReadTest(), name, conf);
         runTest(new BigFileWriteTest(), name, conf);
-        runTest(new ConcurrentReadTest(), name, conf);
-        runTest(new ConcurrentReadWriteTest(), name, conf);
+//        runTest(new ConcurrentReadTest(), name, conf);
+//        runTest(new ConcurrentReadWriteTest(), name, conf);
         runTest(new SimpleSearchTest(), name, conf);
         runTest(new SQL2SearchTest(), name, conf);
         runTest(new DescendantSearchTest(), name, conf);
