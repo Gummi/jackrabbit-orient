@@ -44,7 +44,7 @@
       <param name="path" value="${wsp.home}/default" />
     </FileSystem>
     <PersistenceManager class="de.eiswind.jackrabbit.persistence.orient.OrientPersistenceManager">
-      <param name="url" value="plocal:${wsp.home}/nodedb" />
+      <param name="url" value="plocal:${rep.home}/orient" />
       <param name="schemaObjectPrefix" value="${wsp.name}_" />
     </PersistenceManager>
     <SearchIndex class="org.apache.jackrabbit.core.query.lucene.SearchIndex">
@@ -76,7 +76,7 @@
             <param name="path" value="${rep.home}/workspaces/version" />
         </FileSystem>
         <PersistenceManager class="de.eiswind.jackrabbit.persistence.orient.OrientPersistenceManager">
-            <param name="url" value="plocal:${rep.home}/workspaces/versiondb"/>
+            <param name="url" value="plocal:${rep.home}/orient"/>
             <param name="schemaObjectPrefix" value="_versions" />
         </PersistenceManager>
     </Versioning>

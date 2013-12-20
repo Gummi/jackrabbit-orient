@@ -216,8 +216,8 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
 
         OSchema schema = database.getMetadata().getSchema();
-        bundleClassName = objectPrefix +name+ "Bundle";
-        refsClassName = objectPrefix + name+"Refs";
+        bundleClassName = getSchemaObjectPrefix()+name+ "Bundle";
+        refsClassName =  getSchemaObjectPrefix()+name+"Refs";
         OClass bundleClass = schema.getClass(bundleClassName);
         OClass vertexClass = schema.getClass("V");
         if (bundleClass == null) {
@@ -269,7 +269,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         }
 
         try {
-
+            database.drop();
             // close db
             database.close();
 
