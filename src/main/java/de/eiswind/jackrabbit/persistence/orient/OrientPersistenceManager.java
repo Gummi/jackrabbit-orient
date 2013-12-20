@@ -212,10 +212,12 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
 
         this.name = context.getHomeDir().getName();
+        database.reload();
+
 
         OSchema schema = database.getMetadata().getSchema();
-        bundleClassName = objectPrefix + "Bundle";
-        refsClassName = objectPrefix + "Refs";
+        bundleClassName = objectPrefix +name+ "Bundle";
+        refsClassName = objectPrefix + name+"Refs";
         OClass bundleClass = schema.getClass(bundleClassName);
         OClass vertexClass = schema.getClass("V");
         if (bundleClass == null) {
@@ -243,7 +245,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
         database.begin(OTransaction.TXTYPE.OPTIMISTIC);
         super.store(changeLog);
-        storeChildRefs();
+
         try{
         database.commit();
         } catch( RuntimeException x){
@@ -255,13 +257,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
     }
 
-    private void storeChildRefs() {
-        for (NodeId id : documentMap.keySet()) {
-            BundleMapper mapper = documentMap.get(id);
-            mapper.writePhase2(documentMap);
-        }
 
-    }
 
 
     /**
@@ -276,6 +272,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
             // close db
             database.close();
+
             super.close();
         } finally {
             initialized = false;

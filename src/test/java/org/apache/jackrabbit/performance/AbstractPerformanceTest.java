@@ -34,9 +34,9 @@ import java.util.regex.Pattern;
 
 public abstract class AbstractPerformanceTest {
 
-    private final int warmup = 10;
+    private final int warmup = 2;
 
-    private final int runtime = 50;
+    private final int runtime = 10;
 
     private final Credentials credentials =
         new SimpleCredentials("admin", "admin".toCharArray());
@@ -80,21 +80,21 @@ public abstract class AbstractPerformanceTest {
 
 //        runTest(new LoginTest(), name, conf);
 //        runTest(new LoginLogoutTest(), name, conf);
-//        runTest(new ReadPropertyTest(), name, conf);
-//        runTest(new SetPropertyTest(), name, conf);
+        runTest(new ReadPropertyTest(), name, conf);
+        runTest(new SetPropertyTest(), name, conf);
 //        runTest(new SmallFileReadTest(), name, conf);
 //        runTest(new SmallFileWriteTest(), name, conf);
 //        runTest(new BigFileReadTest(), name, conf);
 //        runTest(new BigFileWriteTest(), name, conf);
 //        runTest(new ConcurrentReadTest(), name, conf);
 //        runTest(new ConcurrentReadWriteTest(), name, conf);
-//   /     runTest(new SimpleSearchTest(), name, conf);
+//        runTest(new SimpleSearchTest(), name, conf);
 //        runTest(new SQL2SearchTest(), name, conf);
 //        runTest(new DescendantSearchTest(), name, conf);
 //        runTest(new SQL2DescendantSearchTest(), name, conf);
 //        runTest(new TwoWayJoinTest(), name, conf);
 //        runTest(new ThreeWayJoinTest(), name, conf);
-        runTest(new CreateManyChildNodesTest(), name, conf);
+//        runTest(new CreateManyChildNodesTest(), name, conf);
 //        runTest(new UpdateManyChildNodesTest(), name, conf);
 //        runTest(new TransientManyChildNodesTest(), name, conf);
 //        runTest(new CreateUserTest(), name, conf);
@@ -143,7 +143,7 @@ public abstract class AbstractPerformanceTest {
                         "Unable to run " + test + ": " + t.getMessage());
                 t.printStackTrace();
             } finally {
-                FileUtils.deleteQuietly(dir);
+//                FileUtils.deleteQuietly(dir);
             }
         }
     }

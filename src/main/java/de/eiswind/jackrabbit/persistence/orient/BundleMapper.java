@@ -85,6 +85,15 @@ public class BundleMapper {
         }
         doc.field("sharedSet", sharedDoc, OType.EMBEDDEDLIST);
 
+        List<ODocument> childDocs = new ArrayList<ODocument>();
+        for (NodePropBundle.ChildNodeEntry child : bundle.getChildNodeEntries()) {
+            ODocument childDoc = database.newInstance();
+            ODocument name = writeName(child.getName());
+            childDoc.field("name", name, OType.EMBEDDED);
+            childDoc.field("uuid", child.getId().toString(), OType.STRING);
+            childDocs.add(childDoc);
+        }
+        doc.field("children", childDocs, OType.EMBEDDEDLIST);
     }
 
     private ODocument writeName(Name name) {
@@ -127,12 +136,11 @@ public class BundleMapper {
             }
         }
         // read child refs
-        Set<OIdentifiable> egdes = database.getOutEdges(doc);
-        for (OIdentifiable edge : egdes) {
-            ODocument edgeDoc = edge.getRecord();
-            ODocument nameDoc = edgeDoc.field("name", OType.EMBEDDED);
+        List<ODocument> childDocs = doc.field("children", OType.EMBEDDEDLIST);
+        for (ODocument childDoc : childDocs) {
+            ODocument nameDoc = childDoc.field("name", OType.EMBEDDED);
             Name childname = readName(nameDoc);
-            String childuuid = edgeDoc.field("uuid", OType.STRING);
+            String childuuid = childDoc.field("uuid", OType.STRING);
             NodeId id = NodeId.valueOf(childuuid);
             bundle.addChildNodeEntry(childname, id);
 
@@ -283,28 +291,7 @@ public class BundleMapper {
         return propDoc;
     }
 
-    public void writePhase2(Map<NodeId, BundleMapper> documentMap) {
-        for (NodePropBundle.ChildNodeEntry child : bundle.getChildNodeEntries()) {
-            BundleMapper target = documentMap.get(child.getId());
-            ODocument targetDoc = null;
-            if (target == null) {
-                targetDoc = loadBundleDoc(child.getId().toString());
-            } else {
-                targetDoc = target.doc;
-            }
-            if (targetDoc == null) {
-                targetDoc = createChild(child);
-                if (targetDoc == null) {
-                    throw new IllegalStateException("FATAL: Child doc not found in db " + child.getId().toString());
-                }
-            }
-            ODocument edge = database.createEdge(doc, targetDoc);
-            ODocument name = writeName(child.getName());
-            edge.field("name", name, OType.EMBEDDED);
-            edge.field("uuid", child.getId().toString(), OType.STRING);
-            edge.save();
-        }
-    }
+
 
     protected synchronized ODocument createChild(NodePropBundle.ChildNodeEntry child) {
         try {
