@@ -3,7 +3,7 @@ jackrabbit-orientdb persistence manager
 
 stores a jackabbit model and structure in a human readable form to an orientdb backend
 
-this is a more or less experimental persistence manager for jackrabbit.
+this is a more or less experimental persistence manager for jackrabbit. It still fails with multithreaded apps.
 
 instead of storing the nodes in serialized form, as normal jackrabbit pms do,
 it utilizes the hybrid-schema feature of orientdb to store the nodes in a human readable form to the database
