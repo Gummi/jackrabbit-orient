@@ -60,22 +60,32 @@ following is an simple example how the nodes get stored in the db
 
 some performance results
 ========================
-# ReadPropertyTest                       min     10%     50%     90%     max
+ReadPropertyTest                       min     10%     50%     90%     max
+
 derby                                     46      46      47      49      55
+
 orient                                    44      44      46      48      61
 
-# ConcurrentReadWriteTest                min     10%     50%     90%     max
+ConcurrentReadWriteTest                min     10%     50%     90%     max
+
 derby                                     12      13      29     355    1362
+
 orient                                    11      12      13     276     570
 
-# SetPropertyTest    
+SetPropertyTest    
+
 derby                                    212     213     246     423     505
+
 orient                                   307     322     403     562     585
 
-# UpdateManyChildNodesTest               min     10%     50%     90%     max
+UpdateManyChildNodesTest               min     10%     50%     90%     max
+
 derby                                      9      10      11      19      76
+
 orient                                    57      58      89     105     339
 
-# BigFileReadTest                        min     10%     50%     90%     max
+BigFileReadTest                        min     10%     50%     90%     max
+
 derby                                     82      85      86      96     118
+
 orient                                    80      81      82      85     367
