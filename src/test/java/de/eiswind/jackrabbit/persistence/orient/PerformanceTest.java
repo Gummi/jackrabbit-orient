@@ -15,7 +15,7 @@ public class PerformanceTest extends AbstractPerformanceTest {
     public void testPerformance() throws Exception {
 
         System.setProperty(QueryEngine.NATIVE_SORT_SYSTEM_PROPERTY, "true");
-        //testPerformance("derby", this.getClass().getResourceAsStream("/jackrabbit-derby.xml"));
+        testPerformance("derby", this.getClass().getResourceAsStream("/jackrabbit-derby.xml"));
         testPerformance("orient", this.getClass().getResourceAsStream("/jackrabbit-orient.xml"));
         System.setProperty(QueryEngine.NATIVE_SORT_SYSTEM_PROPERTY, "false");
     }

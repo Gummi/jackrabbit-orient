@@ -17,7 +17,6 @@ import com.orientechnologies.orient.core.metadata.schema.OSchema;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.query.OQuery;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.orientechnologies.orient.core.record.impl.ORecordBytes;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemException;
@@ -190,6 +189,8 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         return blobFSBlockSize == 0;
     }
 
+
+     private BinaryFileSystemHelper fileSystem;
     /**
      * {@inheritDoc}
      */
@@ -197,6 +198,8 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (initialized) {
             throw new IllegalStateException("already initialized");
         }
+        this.fileSystem = new BinaryFileSystemHelper(context.getFileSystem());
+
         OGlobalConfiguration.STORAGE_KEEP_OPEN.setValue(false);
         ODatabaseDocumentTx db;
 
@@ -335,7 +338,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
                     return null;
                 }
 
-                BundleMapper mapper = new BundleMapper(doc, database, bundleClassName);
+                BundleMapper mapper = new BundleMapper(doc, database, bundleClassName, fileSystem);
                 NodePropBundle bundle = mapper.read();
                 return bundle;
             });
@@ -400,7 +403,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
                 if (vertex == null) {
                     throw new IllegalStateException("FATAL: Tried to update non existing bundle" + bundle.getId().toString());
                 }
-                BundleMapper mapper = new BundleMapper(vertex, database, bundleClassName);
+                BundleMapper mapper = new BundleMapper(vertex, database, bundleClassName, fileSystem);
                 mapper.writePhase1(bundle);
                 vertex.save();
                 NodeId id = bundle.getId();
@@ -453,10 +456,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
                         if (PropertyType.BINARY == type) {
                             Boolean embedded = vDoc.field("embedded", OType.BOOLEAN);
                             if (!embedded) {
-                                for (OIdentifiable id : (List<OIdentifiable>) vDoc.field("value")) {
-                                    ORecordBytes chunk = id.getRecord();
-                                    chunk.delete();
-                                }
+                                fileSystem.delete(vDoc.field("value", OType.STRING));
                             }
                         }
                     }

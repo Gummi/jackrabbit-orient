@@ -2,12 +2,9 @@ package de.eiswind.jackrabbit.persistence.orient;
 
 import com.orientechnologies.orient.core.db.record.ODatabaseRecord;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
-import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.index.OIndex;
-import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.orientechnologies.orient.core.record.impl.ORecordBytes;
 import org.apache.commons.io.IOUtils;
 import org.apache.jackrabbit.core.id.NodeId;
 import org.apache.jackrabbit.core.id.PropertyId;
@@ -20,7 +17,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -47,12 +46,14 @@ public class BundleMapper {
     private ODatabaseRecord database;
     private NodePropBundle bundle;
     private String bundleClassName;
+    private BinaryFileSystemHelper fileSystem;
 
-    public BundleMapper(ODocument doc, ODatabaseRecord database, String bundleClassName) {
+    public BundleMapper(ODocument doc, ODatabaseRecord database, String bundleClassName, BinaryFileSystemHelper fileSystem) {
         this.bundleClassName = bundleClassName;
 
         this.doc = doc;
         this.database = database;
+        this.fileSystem = fileSystem;
     }
 
     public void writePhase1(NodePropBundle _bundle) throws IOException {
@@ -181,16 +182,10 @@ public class BundleMapper {
                             values.add(InternalValue.create((byte[]) vDoc.field("value", OType.BINARY)));
                         } else {
                             try{
-                            ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            vDoc.setLazyLoad(false);
-                            for (OIdentifiable id : (List<OIdentifiable>) vDoc.field("value")) {
-                                ORecordBytes chunk =  id.getRecord();
-                                chunk.toOutputStream(out);
-                                chunk.unload();
-                            }
 
-                            values.add(InternalValue.create(new ByteArrayInputStream(out.toByteArray())));
-                            } catch( RepositoryException |IOException x){
+                                InputStream in = fileSystem.read(vDoc.field("value", OType.STRING));
+                                values.add(InternalValue.create(in));
+                            } catch( RepositoryException x){
                                log.error("Failed to read blob",x);
                             }
                         }
@@ -256,33 +251,8 @@ public class BundleMapper {
                             valDoc.field(VALUE, out.toByteArray(), OType.BINARY);
                         } else {
 
-                            database.declareIntent( new OIntentMassiveInsert() );
-
-                            List<ORID> chunks = new ArrayList<>();
-                            InputStream in = new BufferedInputStream( val.getStream() );
-                            while ( in.available() > 0 ) {
-                                final ORecordBytes chunk = new ORecordBytes();
-
-                                // READ REMAINING DATA, BUT NOT MORE THAN 1M
-                                chunk.fromInputStream( in, 1024*1024 );
-
-                                // SAVE THE CHUNK TO GET THE REFERENCE (IDENTITY) AND FREE FROM THE MEMORY
-                                database.save( chunk );
-
-                                // SAVE ITS REFERENCE INTO THE COLLECTION
-                                chunks.add( chunk.getIdentity() );
-                            }
-
-                            // SAVE THE COLLECTION OF REFERENCES IN A NEW DOCUMENT
-                            ODocument record = new ODocument();
-                            record.field( "data", chunks );
-                            database.save( record );
-
-                            database.declareIntent( null );
-
-                            valDoc.field(VALUE, chunks);
-
-
+                            String id = fileSystem.write(val.getStream());
+                            valDoc.field(VALUE, id, OType.STRING);
                         }
                         break;
 
