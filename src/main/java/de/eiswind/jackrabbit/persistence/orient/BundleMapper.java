@@ -2,7 +2,9 @@ package de.eiswind.jackrabbit.persistence.orient;
 
 import com.orientechnologies.orient.core.db.record.ODatabaseRecord;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
+import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.index.OIndex;
+import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.record.impl.ORecordBytes;
@@ -18,8 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -179,9 +180,19 @@ public class BundleMapper {
                         if (embedded) {
                             values.add(InternalValue.create((byte[]) vDoc.field("value", OType.BINARY)));
                         } else {
-                            ORecordBytes bytes = vDoc.field("value", OType.LINK);
+                            try{
+                            ByteArrayOutputStream out = new ByteArrayOutputStream();
+                            vDoc.setLazyLoad(false);
+                            for (OIdentifiable id : (List<OIdentifiable>) vDoc.field("value")) {
+                                ORecordBytes chunk =  id.getRecord();
+                                chunk.toOutputStream(out);
+                                chunk.unload();
+                            }
 
-                            values.add(InternalValue.create(bytes.toStream()));
+                            values.add(InternalValue.create(new ByteArrayInputStream(out.toByteArray())));
+                            } catch( RepositoryException |IOException x){
+                               log.error("Failed to read blob",x);
+                            }
                         }
                         break;
                     case PropertyType.DOUBLE:
@@ -244,10 +255,32 @@ public class BundleMapper {
                             IOUtils.copy(val.getStream(), out);
                             valDoc.field(VALUE, out.toByteArray(), OType.BINARY);
                         } else {
-                            ORecordBytes blob = new ORecordBytes();
-                            blob.fromInputStream(val.getStream());
-                            blob.save();
-                            valDoc.field(VALUE, blob);
+
+                            database.declareIntent( new OIntentMassiveInsert() );
+
+                            List<ORID> chunks = new ArrayList<>();
+                            InputStream in = new BufferedInputStream( val.getStream() );
+                            while ( in.available() > 0 ) {
+                                final ORecordBytes chunk = new ORecordBytes();
+
+                                // READ REMAINING DATA, BUT NOT MORE THAN 1M
+                                chunk.fromInputStream( in, 1024*1024 );
+
+                                // SAVE THE CHUNK TO GET THE REFERENCE (IDENTITY) AND FREE FROM THE MEMORY
+                                database.save( chunk );
+
+                                // SAVE ITS REFERENCE INTO THE COLLECTION
+                                chunks.add( chunk.getIdentity() );
+                            }
+
+                            // SAVE THE COLLECTION OF REFERENCES IN A NEW DOCUMENT
+                            ODocument record = new ODocument();
+                            record.field( "data", chunks );
+                            database.save( record );
+
+                            database.declareIntent( null );
+
+                            valDoc.field(VALUE, chunks);
 
 
                         }

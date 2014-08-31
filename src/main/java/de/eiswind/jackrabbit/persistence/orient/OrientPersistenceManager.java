@@ -17,6 +17,7 @@ import com.orientechnologies.orient.core.metadata.schema.OSchema;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.query.OQuery;
 import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.core.record.impl.ORecordBytes;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
 import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemException;
@@ -32,6 +33,7 @@ import org.apache.jackrabbit.core.state.NodeReferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jcr.PropertyType;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
@@ -195,7 +197,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (initialized) {
             throw new IllegalStateException("already initialized");
         }
-        OGlobalConfiguration.STORAGE_KEEP_OPEN.setValue( false );
+        OGlobalConfiguration.STORAGE_KEEP_OPEN.setValue(false);
         ODatabaseDocumentTx db;
 
         db = new ODatabaseDocumentTx(url);
@@ -217,7 +219,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         this.name = context.getHomeDir().getName();
 
 
-        runWithDatabase(database -> {
+        runWithDatabse(database -> {
 
             OSchema schema = database.getMetadata().getSchema();
             bundleClassName = getSchemaObjectPrefix() + name + "Bundle";
@@ -248,10 +250,10 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     public synchronized void store(ChangeLog changeLog)
             throws ItemStateException {
         documentMap.clear();
-        runWithDatabase(db -> {
+        runWithDatabse(db -> {
 
             try {
-              
+
                 super.store(changeLog);
             } catch (ItemStateException e) {
                 log.error("jackrabbit", e);
@@ -263,13 +265,13 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     }
 
 
-    protected Object runWithDatabase(Function<ODatabaseRecord, Object> function) {
+    protected Object runWithDatabse(Function<ODatabaseRecord, Object> function) {
 
         ODatabaseDocumentTx closeDB = null;
         ODatabaseRecord database = null;
         if (!ODatabaseRecordThreadLocal.INSTANCE.isDefined()) {
 
-           
+
             closeDB = pool.acquire(url, user, pass);
             database = closeDB;
 
@@ -292,8 +294,8 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
             throw x;
         } finally {
             if (closeDB != null) {
-               
-               pool.release(closeDB);
+
+                pool.release(closeDB);
 
             }
         }
@@ -325,7 +327,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      */
     protected NodePropBundle loadBundle(NodeId id) throws ItemStateException {
         try {
-            return (NodePropBundle) runWithDatabase(database -> {
+            return (NodePropBundle) runWithDatabse(database -> {
                 String uuid = id.toString();
 
                 ODocument doc = loadBundleDoc(uuid);
@@ -385,7 +387,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      * {@inheritDoc}
      */
     protected synchronized void storeBundle(NodePropBundle bundle) throws ItemStateException {
-        runWithDatabase(database -> {
+        runWithDatabse(database -> {
 
             try {
                 ODocument vertex = null;
@@ -421,13 +423,15 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      */
     protected synchronized void destroyBundle(NodePropBundle bundle) throws ItemStateException {
 
-        runWithDatabase(database -> {
+        runWithDatabse(database -> {
             try {
                 String uuid = bundle.getId().toString();
                 ODocument result = loadBundleDoc(uuid);
                 if (result == null) {
-                    throw new NoSuchItemStateException(uuid + " is missing");
+                    throw new NullPointerException(uuid + " is missing");
                 }
+                cascadeDeleteToBlobs(result);
+
                 result.delete();
             } catch (Exception e) {
                 String msg = "failed to delete bundle: " + bundle.getId();
@@ -438,11 +442,34 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         });
     }
 
+    private void cascadeDeleteToBlobs(ODocument result) {
+        List<ODocument> propertyDocs = result.field("properties", OType.EMBEDDEDLIST);
+        if (propertyDocs != null) {
+            for (ODocument pDoc : propertyDocs) {
+                List<ODocument> valDocs = pDoc.field("properties", OType.EMBEDDEDLIST);
+                if (valDocs != null) {
+                    for (ODocument vDoc : valDocs) {
+                        int type = vDoc.field("type", OType.INTEGER);
+                        if (PropertyType.BINARY == type) {
+                            Boolean embedded = vDoc.field("embedded", OType.BOOLEAN);
+                            if (!embedded) {
+                                for (OIdentifiable id : (List<OIdentifiable>) vDoc.field("value")) {
+                                    ORecordBytes chunk = id.getRecord();
+                                    chunk.delete();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private ODocument loadBundleDoc(String uuid) {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        return (ODocument) runWithDatabase(database -> {
+        return (ODocument) runWithDatabse(database -> {
             OIndex<OIdentifiable> index = (OIndex<OIdentifiable>) database.getMetadata().getIndexManager().getIndex(bundleClassName + ".uuid");
             OIdentifiable id = index.get(uuid);
             ODocument doc = null;
@@ -458,7 +485,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
     private ODocument loadRefsDoc(String targetuuid) {
 
-        return (ODocument) runWithDatabase(database -> {
+        return (ODocument) runWithDatabse(database -> {
             OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from " + refsClassName + " WHERE targetuuid = '" + targetuuid + "'");
             List<ODocument> result = database.query(query);
             if (result.size() == 0) {
@@ -477,7 +504,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        return (NodeReferences) runWithDatabase(database -> {
+        return (NodeReferences) runWithDatabse(database -> {
             ODocument refsDoc = loadRefsDoc(targetId.toString());
             if (refsDoc == null) {
                 throw new NullPointerException(targetId.toString());
@@ -500,7 +527,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        runWithDatabase(database -> {
+        runWithDatabse(database -> {
             ODocument refsDoc = loadRefsDoc(refs.getTargetId().toString());
             if (refsDoc == null) {
                 refsDoc = new ODocument(refsClassName);
@@ -527,7 +554,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        runWithDatabase(database -> {
+        runWithDatabse(database -> {
             ODocument doc = loadRefsDoc(refs.getTargetId().toString());
             if (doc != null) {
                 doc.delete();
@@ -543,7 +570,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        return (Boolean) runWithDatabase(database -> {
+        return (Boolean) runWithDatabse(database -> {
             ODocument doc = loadRefsDoc(targetId.toString());
             return doc != null;
         });

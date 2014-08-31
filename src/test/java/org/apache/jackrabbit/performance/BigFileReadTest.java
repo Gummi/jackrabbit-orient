@@ -27,7 +27,7 @@ import java.util.Calendar;
 
 public class BigFileReadTest extends AbstractTest {
 
-    private static final int FILE_COUNT = 100;
+    private static final int FILE_COUNT = 10;
 
     private static final int FILE_SIZE = 100;
 
