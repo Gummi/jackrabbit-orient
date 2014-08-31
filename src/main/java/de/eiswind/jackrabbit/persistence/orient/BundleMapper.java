@@ -171,7 +171,7 @@ public class BundleMapper {
         Boolean multiValued = pDoc.field("multiValued", OType.BOOLEAN);
         entry.setMultiValued(multiValued);
         List<InternalValue> values = new ArrayList<InternalValue>();
-        List<ODocument> valDocs = pDoc.field("properties", OType.EMBEDDEDLIST);
+        List<ODocument> valDocs = pDoc.field("values", OType.EMBEDDEDLIST);
         if (valDocs != null) {
             for (ODocument vDoc : valDocs) {
                 int type = vDoc.field("type", OType.INTEGER);
@@ -199,7 +199,7 @@ public class BundleMapper {
                         values.add(InternalValue.create((BigDecimal) vDoc.field(VALUE, OType.DECIMAL)));
                         break;
                     case PropertyType.LONG:
-                        values.add(InternalValue.create((Long) vDoc.field(VALUE, OType.LONG)));
+                        values.add(InternalValue.create(((Long) vDoc.field(VALUE, OType.LONG)).longValue()));
                         break;
                     case PropertyType.BOOLEAN:
                         values.add(InternalValue.create((Boolean) vDoc.field(VALUE, OType.BOOLEAN)));
@@ -222,6 +222,9 @@ public class BundleMapper {
                         values.add(InternalValue.create((String) vDoc.field(VALUE, OType.STRING)));
                 }
             }
+        }
+        if(values.size()==0){
+            log.error("ill property here");
         }
         entry.setValues(values.toArray(new InternalValue[]{}));
         return entry;
