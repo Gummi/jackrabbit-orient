@@ -1,6 +1,6 @@
 package de.eiswind.jackrabbit.persistence.orient;
 
-import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
+import com.orientechnologies.orient.core.db.record.ODatabaseRecord;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OType;
@@ -43,11 +43,11 @@ public class BundleMapper {
     private static final long minBlobSize = 1024;
 
     private ODocument doc;
-    private OGraphDatabase database;
+    private ODatabaseRecord database;
     private NodePropBundle bundle;
     private String bundleClassName;
 
-    public BundleMapper(ODocument doc, OGraphDatabase database, String bundleClassName) {
+    public BundleMapper(ODocument doc, ODatabaseRecord database, String bundleClassName) {
         this.bundleClassName = bundleClassName;
 
         this.doc = doc;
@@ -115,8 +115,13 @@ public class BundleMapper {
         bundle = new NodePropBundle(NodeId.valueOf(uuid));
 
         String parentUUID = doc.field("parentuuid", OType.STRING);
-        bundle.setParentId(NodeId.valueOf(parentUUID));
+        NodeId parentId = NodeId.valueOf(parentUUID);
+        if (NULL_PARENT_ID.equals(parentId)) {
+           bundle.setParentId(null);
+        } else {
 
+            bundle.setParentId(parentId);
+        }
         ODocument primaryTypeDoc = doc.field("primaryType", OType.EMBEDDED);
 
         Name name = readName(primaryTypeDoc);
@@ -297,7 +302,7 @@ public class BundleMapper {
         try {
             ODocument doc = null;
 
-            doc = database.createVertex(bundleClassName);
+            doc = new ODocument(bundleClassName);
             doc.field("primaryType", writeName(child.getName()), OType.EMBEDDED);
             NodeId parentId = bundle.getId();
             if (parentId == null) {

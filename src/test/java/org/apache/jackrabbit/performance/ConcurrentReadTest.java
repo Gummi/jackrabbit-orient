@@ -43,9 +43,9 @@ public class ConcurrentReadTest extends AbstractTest {
             for (int j = 0; j < NODE_COUNT; j++) {
                 node.addNode("node" + j, "nt:unstructured");
             }
-            session.save();
-        }
 
+        }
+        session.save();
         for (int i = 0; i < READER_COUNT; i++) {
             addBackgroundJob(new Reader());
         }

@@ -3,9 +3,13 @@
  */
 package de.eiswind.jackrabbit.persistence.orient;
 
-import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
+import com.orientechnologies.common.exception.OException;
+import com.orientechnologies.orient.core.config.OGlobalConfiguration;
+import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
+import com.orientechnologies.orient.core.db.record.ODatabaseRecord;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
-import com.orientechnologies.orient.core.exception.OStorageException;
 import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OProperty;
@@ -14,7 +18,6 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.query.OQuery;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
-import com.orientechnologies.orient.core.tx.OTransaction;
 import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.core.fs.FileSystemException;
 import org.apache.jackrabbit.core.id.NodeId;
@@ -31,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * (C) 2013 by Thomas Kratz
@@ -41,8 +45,7 @@ import java.util.*;
 /**
  * This is a generic persistence manager that stores the {@link NodePropBundle}s
  * in an orient db datastore.
- * <p/>
- *
+ * <p>
  */
 public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
@@ -62,9 +65,12 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     protected String objectPrefix;
 
     private String url;
-    private String user="admin";
-    private String pass="admin";
+    private String user = "admin";
+    private String pass = "admin";
     private boolean createDB = true;
+
+
+    private ODatabaseDocumentPool pool;
 
     public String getUrl() {
         return url;
@@ -133,7 +139,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      * the name of this persistence manager
      */
     private String name = super.toString();
-    private OGraphDatabase database;
+
 
     private String bundleClassName;
     private String refsClassName;
@@ -169,6 +175,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         return errorHandling.toString();
     }
 
+
     /**
      * {@inheritDoc}
      */
@@ -188,8 +195,18 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (initialized) {
             throw new IllegalStateException("already initialized");
         }
+        OGlobalConfiguration.STORAGE_KEEP_OPEN.setValue( false );
+        ODatabaseDocumentTx db;
 
+        db = new ODatabaseDocumentTx(url);
 
+        if (!db.exists()) {
+            db.create();
+
+        }
+
+        pool = new ODatabaseDocumentPool(url, "admin", "admin");
+        pool.setup(1, 50);
         super.init(context);
 
         // load namespaces
@@ -197,43 +214,32 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         binding.setMinBlobSize(minBlobSize);
 
 
-        database = new OGraphDatabase(url);
-
-        try {
-            database.open(user, pass);
-        } catch (OStorageException x) {
-            if (createDB) {
-                database.create();
-            } else {
-                throw x;
-
-            }
-        }
-
-
         this.name = context.getHomeDir().getName();
-        database.reload();
 
 
-        OSchema schema = database.getMetadata().getSchema();
-        bundleClassName = getSchemaObjectPrefix()+name+ "Bundle";
-        refsClassName =  getSchemaObjectPrefix()+name+"Refs";
-        OClass bundleClass = schema.getClass(bundleClassName);
-        OClass vertexClass = schema.getClass("V");
-        if (bundleClass == null) {
+        runWithDatabase(database -> {
 
-            bundleClass = schema.createClass(bundleClassName, vertexClass);
-            OProperty id = bundleClass.createProperty("uuid", OType.STRING);
-            id.createIndex(OClass.INDEX_TYPE.UNIQUE);
-            schema.save();
-        }
-        OClass refsClass = schema.getClass(refsClassName);
-        if (refsClass == null) {
-            refsClass = schema.createClass(refsClassName, vertexClass);
-            OProperty id = refsClass.createProperty("targetuuid", OType.STRING);
-            id.createIndex(OClass.INDEX_TYPE.UNIQUE);
-            schema.save();
-        }
+            OSchema schema = database.getMetadata().getSchema();
+            bundleClassName = getSchemaObjectPrefix() + name + "Bundle";
+            refsClassName = getSchemaObjectPrefix() + name + "Refs";
+            OClass bundleClass = schema.getClass(bundleClassName);
+            OClass vertexClass = schema.getClass("V");
+            if (bundleClass == null) {
+                bundleClass = schema.createClass(bundleClassName, vertexClass);
+                OProperty id = bundleClass.createProperty("uuid", OType.STRING);
+                id.createIndex(OClass.INDEX_TYPE.UNIQUE);
+                schema.save();
+            }
+
+            OClass refsClass = schema.getClass(refsClassName);
+            if (refsClass == null) {
+                refsClass = schema.createClass(refsClassName, vertexClass);
+                OProperty id = refsClass.createProperty("targetuuid", OType.STRING);
+                id.createIndex(OClass.INDEX_TYPE.UNIQUE);
+                schema.save();
+            }
+            return null;
+        });
 
 
         initialized = true;
@@ -242,23 +248,59 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     public synchronized void store(ChangeLog changeLog)
             throws ItemStateException {
         documentMap.clear();
+        runWithDatabase(db -> {
 
-        database.begin(OTransaction.TXTYPE.OPTIMISTIC);
-        super.store(changeLog);
+            try {
+              
+                super.store(changeLog);
+            } catch (ItemStateException e) {
+                log.error("jackrabbit", e);
+            }
+            return null;
+        });
 
-        try{
-        database.commit();
-        } catch( RuntimeException x){
-            database.rollback();
-            log.error("TX rolled back "+x.getMessage());
-            throw x;
-        }
         documentMap.clear();
-
     }
 
 
+    protected Object runWithDatabase(Function<ODatabaseRecord, Object> function) {
 
+        ODatabaseDocumentTx closeDB = null;
+        ODatabaseRecord database = null;
+        if (!ODatabaseRecordThreadLocal.INSTANCE.isDefined()) {
+
+           
+            closeDB = pool.acquire(url, user, pass);
+            database = closeDB;
+
+
+        } else {
+            database = ODatabaseRecordThreadLocal.INSTANCE.get();
+            if (database.isClosed()) {
+                database.open(user, pass);
+            }
+        }
+
+        Object result = null;
+        try {
+            database.getTransaction().begin();
+            result = function.apply(database);
+            database.getTransaction().commit();
+        } catch (OException x) {
+            database.getTransaction().rollback();
+            log.error("DB error", x);
+            throw x;
+        } finally {
+            if (closeDB != null) {
+               
+               pool.release(closeDB);
+
+            }
+        }
+
+        return result;
+
+    }
 
     /**
      * {@inheritDoc}
@@ -269,9 +311,8 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         }
 
         try {
-            database.drop();
-            // close db
-            database.close();
+
+            pool.close();
 
             super.close();
         } finally {
@@ -284,14 +325,18 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      */
     protected NodePropBundle loadBundle(NodeId id) throws ItemStateException {
         try {
-            String uuid = id.toString();
-            ODocument doc = loadBundleDoc(uuid);
-            if (doc == null) {
-                return null;
-            }
-            BundleMapper mapper = new BundleMapper(doc, database, bundleClassName);
-            NodePropBundle bundle = mapper.read();
-            return bundle;
+            return (NodePropBundle) runWithDatabase(database -> {
+                String uuid = id.toString();
+
+                ODocument doc = loadBundleDoc(uuid);
+                if (doc == null) {
+                    return null;
+                }
+
+                BundleMapper mapper = new BundleMapper(doc, database, bundleClassName);
+                NodePropBundle bundle = mapper.read();
+                return bundle;
+            });
         } catch (Exception e) {
             String msg = "failed to read bundle: " + id + ": " + e;
             log.error(msg);
@@ -340,69 +385,88 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      * {@inheritDoc}
      */
     protected synchronized void storeBundle(NodePropBundle bundle) throws ItemStateException {
-        try {
-            ODocument vertex = null;
-            if (bundle.isNew()) {
+        runWithDatabase(database -> {
 
-                vertex = database.createVertex(bundleClassName);
-            } else {
-                vertex = loadBundleDoc(bundle.getId().toString());
+            try {
+                ODocument vertex = null;
+                if (bundle.isNew()) {
+
+                    vertex = new ODocument(bundleClassName);
+                } else {
+                    vertex = loadBundleDoc(bundle.getId().toString());
+                }
+                if (vertex == null) {
+                    throw new IllegalStateException("FATAL: Tried to update non existing bundle" + bundle.getId().toString());
+                }
+                BundleMapper mapper = new BundleMapper(vertex, database, bundleClassName);
+                mapper.writePhase1(bundle);
+                vertex.save();
+                NodeId id = bundle.getId();
+                // store this for phase2
+
+                documentMap.put(id, mapper);
+
+            } catch (Exception e) {
+                String msg = "failed to write bundle: " + bundle.getId();
+                OrientPersistenceManager.log.error(msg, e);
+
             }
-            if (vertex == null) {
-                throw new IllegalStateException("FATAL: Tried to update non existing bundle" + bundle.getId().toString());
-            }
-            BundleMapper mapper = new BundleMapper(vertex, database, bundleClassName);
-            mapper.writePhase1(bundle);
-            vertex.save();
-            NodeId id = bundle.getId();
-            // store this for phase2
+            return null;
+        });
 
-            documentMap.put(id, mapper);
-
-        } catch (Exception e) {
-            String msg = "failed to write bundle: " + bundle.getId();
-            OrientPersistenceManager.log.error(msg, e);
-            throw new ItemStateException(msg, e);
-        }
     }
 
     /**
      * {@inheritDoc}
      */
     protected synchronized void destroyBundle(NodePropBundle bundle) throws ItemStateException {
-        try {
-            String uuid = bundle.getId().toString();
-            ODocument result = loadBundleDoc(uuid);
-            if (result == null) {
-                throw new NoSuchItemStateException(uuid + " is missing");
+
+        runWithDatabase(database -> {
+            try {
+                String uuid = bundle.getId().toString();
+                ODocument result = loadBundleDoc(uuid);
+                if (result == null) {
+                    throw new NoSuchItemStateException(uuid + " is missing");
+                }
+                result.delete();
+            } catch (Exception e) {
+                String msg = "failed to delete bundle: " + bundle.getId();
+                OrientPersistenceManager.log.error(msg, e);
+
             }
-            result.delete();
-        } catch (Exception e) {
-            String msg = "failed to delete bundle: " + bundle.getId();
-            OrientPersistenceManager.log.error(msg, e);
-            throw new ItemStateException(msg, e);
-        }
+            return null;
+        });
     }
 
     private ODocument loadBundleDoc(String uuid) {
-        OIndex<OIdentifiable> index = ( OIndex<OIdentifiable> )database.getMetadata().getIndexManager().getIndex(bundleClassName+".uuid");
-        OIdentifiable id =index.get(uuid);
-        if(id!=null){
-            return id.getRecord();
-        } else {
-            return null;
+        if (!initialized) {
+            throw new IllegalStateException("not initialized");
         }
+        return (ODocument) runWithDatabase(database -> {
+            OIndex<OIdentifiable> index = (OIndex<OIdentifiable>) database.getMetadata().getIndexManager().getIndex(bundleClassName + ".uuid");
+            OIdentifiable id = index.get(uuid);
+            ODocument doc = null;
+            if (id != null) {
+                doc = id.getRecord();
+            }
+
+            return doc;
+        });
+
 
     }
 
     private ODocument loadRefsDoc(String targetuuid) {
-        OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from " + refsClassName + " WHERE targetuuid = '" + targetuuid + "'");
-        List<ODocument> result = database.query(query);
-        if (result.size() == 0) {
-            return null;
-        }
-        // result must be unique since we have the index
-        return result.get(0);
+
+        return (ODocument) runWithDatabase(database -> {
+            OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from " + refsClassName + " WHERE targetuuid = '" + targetuuid + "'");
+            List<ODocument> result = database.query(query);
+            if (result.size() == 0) {
+                return null;
+            }
+            // result must be unique since we have the index
+            return result.get(0);
+        });
     }
 
     /**
@@ -413,17 +477,19 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        ODocument refsDoc = loadRefsDoc(targetId.toString());
-        if (refsDoc == null) {
-            throw new NoSuchItemStateException(targetId.toString());
-        }
-        NodeReferences refs = new NodeReferences(targetId);
-        List<ODocument> refDocs = refsDoc.field("refs", OType.EMBEDDEDLIST);
-        for (ODocument rDoc : refDocs) {
-            String value = rDoc.field("ref", OType.STRING);
-            refs.addReference(PropertyId.valueOf(value));
-        }
-        return refs;
+        return (NodeReferences) runWithDatabase(database -> {
+            ODocument refsDoc = loadRefsDoc(targetId.toString());
+            if (refsDoc == null) {
+                throw new NullPointerException(targetId.toString());
+            }
+            NodeReferences refs = new NodeReferences(targetId);
+            List<ODocument> refDocs = refsDoc.field("refs", OType.EMBEDDEDLIST);
+            for (ODocument rDoc : refDocs) {
+                String value = rDoc.field("ref", OType.STRING);
+                refs.addReference(PropertyId.valueOf(value));
+            }
+            return refs;
+        });
     }
 
     /**
@@ -434,21 +500,24 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        ODocument refsDoc = loadRefsDoc(refs.getTargetId().toString());
-        if (refsDoc == null) {
-            refsDoc = database.createVertex(refsClassName);
-            refsDoc.field("targetuuid", refs.getTargetId().toString(), OType.STRING);
+        runWithDatabase(database -> {
+            ODocument refsDoc = loadRefsDoc(refs.getTargetId().toString());
+            if (refsDoc == null) {
+                refsDoc = new ODocument(refsClassName);
+                refsDoc.field("targetuuid", refs.getTargetId().toString(), OType.STRING);
 
-        }
-        List<ODocument> refDocs = new ArrayList<ODocument>();
-        for (PropertyId propId : refs.getReferences()) {
-            ODocument refDoc = database.createVertex();
-            refDoc.field("ref", propId.toString(), OType.STRING);
-            refDocs.add(refDoc);
+            }
+            List<ODocument> refDocs = new ArrayList<ODocument>();
+            for (PropertyId propId : refs.getReferences()) {
+                ODocument refDoc = database.newInstance();
+                refDoc.field("ref", propId.toString(), OType.STRING);
+                refDocs.add(refDoc);
 
-        }
-        refsDoc.field("refs", refDocs, OType.EMBEDDEDLIST);
-        refsDoc.save();
+            }
+            refsDoc.field("refs", refDocs, OType.EMBEDDEDLIST);
+            refsDoc.save();
+            return null;
+        });
     }
 
     /**
@@ -458,10 +527,13 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        ODocument doc = loadRefsDoc(refs.getTargetId().toString());
-        if (doc != null) {
-            doc.delete();
-        }
+        runWithDatabase(database -> {
+            ODocument doc = loadRefsDoc(refs.getTargetId().toString());
+            if (doc != null) {
+                doc.delete();
+            }
+            return null;
+        });
     }
 
     /**
@@ -471,8 +543,10 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        ODocument doc = loadRefsDoc(targetId.toString());
-        return doc != null;
+        return (Boolean) runWithDatabase(database -> {
+            ODocument doc = loadRefsDoc(targetId.toString());
+            return doc != null;
+        });
     }
 
     /**
@@ -534,6 +608,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
                 // ignore
             }
         }
+
     }
 
     /**

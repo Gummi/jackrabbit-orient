@@ -26,11 +26,11 @@ import org.apache.jackrabbit.core.id.PropertyId;
 import org.apache.jackrabbit.core.persistence.PMContext;
 import org.apache.jackrabbit.core.persistence.PersistenceManager;
 import org.apache.jackrabbit.core.state.*;
-import org.apache.jackrabbit.core.stats.RepositoryStatisticsImpl;
 import org.apache.jackrabbit.core.value.InternalValue;
 import org.apache.jackrabbit.spi.Name;
 import org.apache.jackrabbit.spi.commons.name.NameConstants;
 import org.apache.jackrabbit.spi.commons.name.NameFactoryImpl;
+import org.apache.jackrabbit.stats.RepositoryStatisticsImpl;
 
 import javax.jcr.PropertyType;
 import java.io.File;
@@ -61,8 +61,8 @@ public class PersistenceManagerTest extends TestCase {
     }
 
     protected void tearDown() throws Exception {
-        FileUtils.deleteQuietly(database);
-        FileUtils.deleteQuietly(directory);
+        FileUtils.forceDelete(database);
+        FileUtils.forceDelete(directory);
     }
 
     public void testOrientPersistenceManager() throws Exception {

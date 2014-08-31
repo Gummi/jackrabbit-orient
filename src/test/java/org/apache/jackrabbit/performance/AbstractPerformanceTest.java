@@ -78,16 +78,16 @@ public abstract class AbstractPerformanceTest {
         }
         byte[] conf = buffer.toByteArray();
 
-//        runTest(new LoginTest(), name, conf);
-//        runTest(new LoginLogoutTest(), name, conf);
+        runTest(new LoginTest(), name, conf);
+        runTest(new LoginLogoutTest(), name, conf);
         runTest(new ReadPropertyTest(), name, conf);
         runTest(new SetPropertyTest(), name, conf);
         runTest(new SmallFileReadTest(), name, conf);
         runTest(new SmallFileWriteTest(), name, conf);
         runTest(new BigFileReadTest(), name, conf);
         runTest(new BigFileWriteTest(), name, conf);
-//        runTest(new ConcurrentReadTest(), name, conf);
-//        runTest(new ConcurrentReadWriteTest(), name, conf);
+        runTest(new ConcurrentReadTest(), name, conf);
+        runTest(new ConcurrentReadWriteTest(), name, conf);
         runTest(new SimpleSearchTest(), name, conf);
         runTest(new SQL2SearchTest(), name, conf);
         runTest(new DescendantSearchTest(), name, conf);
@@ -97,7 +97,7 @@ public abstract class AbstractPerformanceTest {
         runTest(new CreateManyChildNodesTest(), name, conf);
         runTest(new UpdateManyChildNodesTest(), name, conf);
         runTest(new TransientManyChildNodesTest(), name, conf);
-//        runTest(new CreateUserTest(), name, conf);
+        runTest(new CreateUserTest(), name, conf);
         runTest(new PathBasedQueryTest(), name, conf);
 //        try {
 //            runTest(new AddGroupMembersTest(), name, conf);
