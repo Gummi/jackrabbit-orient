@@ -93,11 +93,11 @@ public abstract class AbstractPerformanceTest {
         runTest(new DescendantSearchTest(), name, conf);
         runTest(new SQL2DescendantSearchTest(), name, conf);
         runTest(new TwoWayJoinTest(), name, conf);
-        runTest(new ThreeWayJoinTest(), name, conf);
+//        runTest(new ThreeWayJoinTest(), name, conf);
         runTest(new CreateManyChildNodesTest(), name, conf);
         runTest(new UpdateManyChildNodesTest(), name, conf);
         runTest(new TransientManyChildNodesTest(), name, conf);
-        runTest(new CreateUserTest(), name, conf);
+//        runTest(new CreateUserTest(), name, conf);
         runTest(new PathBasedQueryTest(), name, conf);
 //        try {
 //            runTest(new AddGroupMembersTest(), name, conf);
