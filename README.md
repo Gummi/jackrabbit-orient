@@ -6,6 +6,7 @@ stores a jackabbit model and structure in a human readable form to an orientdb b
 this is a more or less experimental persistence manager for jackrabbit. 
 it can be run with the included jackrabbit performance tests.
 
+it does not yet pass all of the jcr compliance tests. but most of them :)
 
 instead of storing the nodes in serialized form, as normal jackrabbit pms do,
 it utilizes the hybrid-schema feature of orientdb to store the nodes in a human readable form to the database
