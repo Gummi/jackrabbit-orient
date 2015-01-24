@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.eiswind</groupId>
     <artifactId>jackrabbit-orient</artifactId>
-    <name>magnolia.thymeleaf-example (parent pom)</name>
+    <name>jackrabbit orientdb persistence manager</name>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -82,12 +82,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
             </plugin>
-            <!--
+
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
-            -->
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
