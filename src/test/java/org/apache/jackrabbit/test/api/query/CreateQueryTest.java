@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Arrays;
 
 import javax.jcr.RepositoryException;
-import javax.jcr.query.QueryManager;
 import javax.jcr.query.InvalidQueryException;
 
 /**

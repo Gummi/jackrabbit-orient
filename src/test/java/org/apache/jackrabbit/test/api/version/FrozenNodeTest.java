@@ -28,7 +28,7 @@ import org.apache.jackrabbit.test.NotExecutableException;
  *
  * @test
  * @sources CheckinTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.CheckinTest
+ * @executeClass org.apache.CheckinTest
  * @keywords versioning
  */
 public class FrozenNodeTest extends AbstractVersionTest {

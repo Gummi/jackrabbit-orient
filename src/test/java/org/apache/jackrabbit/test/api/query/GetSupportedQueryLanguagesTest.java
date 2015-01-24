@@ -16,7 +16,6 @@
  */
 package org.apache.jackrabbit.test.api.query;
 
-import javax.jcr.query.QueryManager;
 import javax.jcr.query.Query;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -29,7 +28,7 @@ import java.util.Arrays;
  *
  * @test
  * @sources GetSupportedQueryLanguagesTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.GetSupportedQueryLanguagesTest
+ * @executeClass org.apache.GetSupportedQueryLanguagesTest
  * @keywords level1
  */
 public class GetSupportedQueryLanguagesTest extends AbstractQueryTest {

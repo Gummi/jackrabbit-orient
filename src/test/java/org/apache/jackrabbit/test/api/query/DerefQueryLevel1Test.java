@@ -33,7 +33,7 @@ import java.util.ArrayList;
  *
  * @test
  * @sources DerefQueryLevel1Test.java
- * @executeClass org.apache.jackrabbit.test.api.query.DerefQueryLevel1Test
+ * @executeClass org.apache.DerefQueryLevel1Test
  * @keywords level1 deref
  */
 public class DerefQueryLevel1Test extends AbstractQueryTest {

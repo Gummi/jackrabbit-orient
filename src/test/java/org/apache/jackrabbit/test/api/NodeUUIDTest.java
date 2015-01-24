@@ -34,7 +34,7 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
  *
  * @test
  * @sources NodeUUIDTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeUUIDTest
+ * @executeClass org.apache.NodeUUIDTest
  * @keywords level2
  */
 public class NodeUUIDTest extends AbstractJCRTest {

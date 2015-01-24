@@ -31,7 +31,7 @@ import java.io.InputStream;
  *
  * @test
  * @sources BooleanPropertyTest.java
- * @executeClass org.apache.jackrabbit.test.api.BooleanPropertyTest
+ * @executeClass org.apache.BooleanPropertyTest
  * @keywords level1
  */
 public class BooleanPropertyTest extends AbstractPropertyTest {

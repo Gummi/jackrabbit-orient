@@ -34,7 +34,7 @@ import java.util.Arrays;
  *
  * @test
  * @sources RepositoryDescriptorTest.java
- * @executeClass org.apache.jackrabbit.test.api.RepositoryDescriptorTest
+ * @executeClass org.apache.RepositoryDescriptorTest
  * @keywords level1
  */
 public class RepositoryDescriptorTest extends AbstractJCRTest {

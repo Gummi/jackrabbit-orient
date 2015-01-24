@@ -27,7 +27,7 @@ import javax.jcr.Node;
  *
  * @test
  * @sources SetPropertyNodeTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetPropertyNodeTest
+ * @executeClass org.apache.SetPropertyNodeTest
  * @keywords level2
  */
 public class SetPropertyNodeTest extends AbstractJCRTest {

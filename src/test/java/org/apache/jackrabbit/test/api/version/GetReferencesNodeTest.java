@@ -37,7 +37,7 @@ import org.apache.jackrabbit.test.NotExecutableException;
  *
  * @test
  * @sources GetReferencesNodeTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.GetReferencesNodeTest
+ * @executeClass org.apache.GetReferencesNodeTest
  * @keywords versioning
  */
 public class GetReferencesNodeTest extends AbstractJCRTest {

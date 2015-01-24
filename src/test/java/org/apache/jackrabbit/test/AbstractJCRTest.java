@@ -484,7 +484,7 @@ public abstract class AbstractJCRTest extends JUnitTest {
      * <li><code>&lt;testClassName></code> is the name of the test class without package prefix.</li>
      * <li><code>&lt;testMethodName></code> is the name of the test method</li>
      * <li><code>&lt;packageName></code> is the name of the package of the test class.
-     * Example: packageName for <code>org.apache.jackrabbit.test.api.BooleanPropertyTest</code>: <code>api</code></li>
+     * Example: packageName for <code>org.apache.BooleanPropertyTest</code>: <code>api</code></li>
      * </ul>
      * @param propName the propName of the configration property.
      * @return the value of the property or <code>null</code> if the property

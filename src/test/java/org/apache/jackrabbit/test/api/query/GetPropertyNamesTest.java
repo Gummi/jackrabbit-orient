@@ -31,7 +31,7 @@ import java.util.ArrayList;
  *
  * @test
  * @sources GetPropertyNamesTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.GetPropertyNamesTest
+ * @executeClass org.apache.GetPropertyNamesTest
  * @keywords level1
  */
 public class GetPropertyNamesTest extends AbstractQueryTest {

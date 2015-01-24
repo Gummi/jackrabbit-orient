@@ -27,7 +27,7 @@ import javax.jcr.Node;
  *
  * @test
  * @sources SetPropertyDoubleTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetPropertyDoubleTest
+ * @executeClass org.apache.SetPropertyDoubleTest
  * @keywords level2
  */
 public class SetPropertyDoubleTest extends AbstractJCRTest {

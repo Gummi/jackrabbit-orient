@@ -26,7 +26,7 @@ import javax.jcr.ItemNotFoundException;
  *
  * @test
  * @sources GetPersistentQueryPathLevel1Test.java
- * @executeClass org.apache.jackrabbit.test.api.query.GetPersistentQueryPathLevel1Test
+ * @executeClass org.apache.GetPersistentQueryPathLevel1Test
  * @keywords level1
  */
 public class GetPersistentQueryPathLevel1Test extends AbstractQueryTest {

@@ -29,7 +29,7 @@ import java.util.Arrays;
  *
  * @test
  * @sources XPathJcrPathTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.XPathJcrPathTest
+ * @executeClass org.apache.XPathJcrPathTest
  * @keywords level1
  */
 public class XPathJcrPathTest extends AbstractQueryTest {

@@ -25,7 +25,7 @@ import javax.jcr.Node;
  *
  * @test
  * @sources MergeNonVersionableSubNodeTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.MergeNonVersionableSubNodeTest
+ * @executeClass org.apache.MergeNonVersionableSubNodeTest
  * @keywords versioning
  */
 public class MergeNonVersionableSubNodeTest extends AbstractMergeTest {

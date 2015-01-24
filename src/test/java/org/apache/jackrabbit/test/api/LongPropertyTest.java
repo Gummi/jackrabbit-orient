@@ -32,7 +32,7 @@ import java.io.InputStream;
  *
  * @test
  * @sources LongPropertyTest.java
- * @executeClass org.apache.jackrabbit.test.api.LongPropertyTest
+ * @executeClass org.apache.LongPropertyTest
  * @keywords level1
  */
 public class LongPropertyTest extends AbstractPropertyTest {

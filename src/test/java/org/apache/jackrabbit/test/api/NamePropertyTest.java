@@ -31,7 +31,7 @@ import javax.jcr.Node;
  *
  * @test
  * @sources NamePropertyTest.java
- * @executeClass org.apache.jackrabbit.test.api.NamePropertyTest
+ * @executeClass org.apache.NamePropertyTest
  * @keywords level1
  */
 public class NamePropertyTest extends AbstractPropertyTest {

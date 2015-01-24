@@ -29,7 +29,7 @@ import java.util.Arrays;
  *
  * @test
  * @sources SimpleSelectionTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.SimpleSelectionTest
+ * @executeClass org.apache.SimpleSelectionTest
  * @keywords level1
  */
 public class SimpleSelectionTest extends AbstractQueryTest {

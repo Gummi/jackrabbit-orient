@@ -36,7 +36,7 @@ import javax.jcr.Session;
  *
  * @test
  * @sources PropertyTest.java
- * @executeClass org.apache.jackrabbit.test.api.PropertyTest
+ * @executeClass org.apache.PropertyTest
  * @keywords level2
  */
 public class PropertyTest extends AbstractJCRTest {

@@ -43,7 +43,7 @@ import org.apache.jackrabbit.test.AbstractJCRTest;
  *
  * @test
  * @sources NodeTypeCreationTest.java
- * @executeClass org.apache.jackrabbit.test.api.nodetype.NodeTypeCreationTest
+ * @executeClass org.apache.NodeTypeCreationTest
  * @keywords level2
  */
 public class NodeTypeCreationTest extends AbstractJCRTest {

@@ -41,7 +41,7 @@ import javax.jcr.Repository;
  *
  * @test
  * @sources TextNodeTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.TextNodeTest
+ * @executeClass org.apache.TextNodeTest
  * @keywords textNodeTest
  */
 public class TextNodeTest extends AbstractQueryTest {

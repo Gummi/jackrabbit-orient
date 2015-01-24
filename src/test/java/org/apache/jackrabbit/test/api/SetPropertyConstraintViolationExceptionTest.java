@@ -39,7 +39,7 @@ import java.io.IOException;
  *
  * @test
  * @sources SetPropertyConstraintViolationExceptionTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetPropertyConstraintViolationExceptionTest
+ * @executeClass org.apache.SetPropertyConstraintViolationExceptionTest
  * @keywords level2
  */
 public class SetPropertyConstraintViolationExceptionTest extends AbstractJCRTest {

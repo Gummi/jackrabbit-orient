@@ -34,7 +34,7 @@ import javax.jcr.Node;
  *
  * @test
  * @sources PropertyItemIsModifiedTest.java
- * @executeClass org.apache.jackrabbit.test.api.PropertyItemIsModifiedTest
+ * @executeClass org.apache.PropertyItemIsModifiedTest
  * @keywords level2
  */
 public class PropertyItemIsModifiedTest extends AbstractJCRTest {

@@ -29,7 +29,7 @@ import org.apache.jackrabbit.test.AbstractJCRTest;
  *
  * @test
  * @sources SetPropertyDecimalTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetPropertyDecimalTest
+ * @executeClass org.apache.SetPropertyDecimalTest
  * @keywords level2
  */
 public class SetPropertyDecimalTest extends AbstractJCRTest {

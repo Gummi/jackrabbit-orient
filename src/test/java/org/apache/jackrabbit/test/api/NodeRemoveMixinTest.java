@@ -36,7 +36,7 @@ import javax.jcr.Repository;
  *
  * @test
  * @sources NodeRemoveMixinTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeRemoveMixinTest
+ * @executeClass org.apache.NodeRemoveMixinTest
  * @keywords level2
  */
 public class NodeRemoveMixinTest extends AbstractJCRTest {

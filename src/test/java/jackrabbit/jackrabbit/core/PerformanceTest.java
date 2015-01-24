@@ -1,7 +1,8 @@
-package de.eiswind.jackrabbit.persistence.orient;
+package jackrabbit.jackrabbit.core;
 
 import org.apache.jackrabbit.core.query.lucene.join.QueryEngine;
 import org.apache.jackrabbit.performance.AbstractPerformanceTest;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.InputStream;
@@ -12,6 +13,7 @@ import java.io.InputStream;
 public class PerformanceTest extends AbstractPerformanceTest {
 
     @Test
+    @Ignore
     public void testPerformance() throws Exception {
 
         System.setProperty(QueryEngine.NATIVE_SORT_SYSTEM_PROPERTY, "true");

@@ -38,7 +38,7 @@ import java.io.IOException;
  *
  * @test
  * @sources ValueFactoryTest.java
- * @executeClass org.apache.jackrabbit.test.api.ValueFactoryTest
+ * @executeClass org.apache.ValueFactoryTest
  * @keywords level2
  */
 public class ValueFactoryTest extends AbstractJCRTest {

@@ -44,7 +44,7 @@ import java.util.NoSuchElementException;
  *
  * @test
  * @sources NodeReadMethodsTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeReadMethodsTest
+ * @executeClass org.apache.NodeReadMethodsTest
  * @keywords level1
  */
 public class NodeReadMethodsTest extends AbstractJCRTest {

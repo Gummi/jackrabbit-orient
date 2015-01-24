@@ -30,7 +30,7 @@ import javax.jcr.version.VersionManager;
  * feature in Versioning.
  * @test
  * @sources ActivitiesTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.ActivitiesTest
+ * @executeClass org.apache.ActivitiesTest
  * @keywords versioning
  * @since JCR 2.0
  */

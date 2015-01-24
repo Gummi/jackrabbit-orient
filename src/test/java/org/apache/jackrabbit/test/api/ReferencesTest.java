@@ -32,7 +32,7 @@ import java.util.HashSet;
  *
  * @test
  * @sources ReferencesTest.java
- * @executeClass org.apache.jackrabbit.test.api.ReferencesTest
+ * @executeClass org.apache.ReferencesTest
  * @keywords level2
  */
 public class ReferencesTest extends AbstractJCRTest {

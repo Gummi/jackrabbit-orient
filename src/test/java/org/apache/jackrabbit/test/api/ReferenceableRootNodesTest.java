@@ -29,7 +29,7 @@ import javax.jcr.RepositoryException;
  *
  * @test
  * @sources ReferenceableRootNodesTest.java
- * @executeClass org.apache.jackrabbit.test.api.ReferenceableRootNodesTest
+ * @executeClass org.apache.ReferenceableRootNodesTest
  * @keywords level1
  */
 public class ReferenceableRootNodesTest extends AbstractJCRTest {

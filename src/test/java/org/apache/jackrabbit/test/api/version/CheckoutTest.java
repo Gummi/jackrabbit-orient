@@ -29,7 +29,7 @@ import javax.jcr.version.VersionManager;
  *
  * @test
  * @sources CheckoutTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.CheckoutTest
+ * @executeClass org.apache.CheckoutTest
  * @keywords versioning
  */
 public class CheckoutTest extends AbstractVersionTest {

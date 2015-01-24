@@ -35,7 +35,7 @@ import org.apache.jackrabbit.test.NotExecutableException;
  *
  * @test
  * @sources SaveTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.SaveTest
+ * @executeClass org.apache.SaveTest
  * @keywords level2
  */
 public class SaveTest extends AbstractJCRTest {

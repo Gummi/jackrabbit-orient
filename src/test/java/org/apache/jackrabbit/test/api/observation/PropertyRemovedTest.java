@@ -34,7 +34,7 @@ import javax.jcr.observation.Event;
  *
  * @test
  * @sources PropertyRemovedTest.java
- * @executeClass org.apache.jackrabbit.test.api.observation.PropertyRemovedTest
+ * @executeClass org.apache.PropertyRemovedTest
  * @keywords observation
  */
 public class PropertyRemovedTest extends AbstractObservationTest {

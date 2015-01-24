@@ -41,7 +41,7 @@ import javax.jcr.nodetype.PropertyDefinition;
  *
  * @test
  * @sources NodeTypeTest.java
- * @executeClass org.apache.jackrabbit.test.api.nodetype.NodeTypeTest
+ * @executeClass org.apache.NodeTypeTest
  * @keywords level1
  */
 public class NodeTypeTest extends AbstractJCRTest {

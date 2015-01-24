@@ -11,6 +11,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.record.ODatabaseRecord;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.index.OIndex;
+import com.orientechnologies.orient.core.index.OIndexManagerProxy;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OProperty;
 import com.orientechnologies.orient.core.metadata.schema.OSchema;
@@ -24,7 +25,11 @@ import org.apache.jackrabbit.core.id.NodeId;
 import org.apache.jackrabbit.core.id.PropertyId;
 import org.apache.jackrabbit.core.persistence.PMContext;
 import org.apache.jackrabbit.core.persistence.bundle.AbstractBundlePersistenceManager;
-import org.apache.jackrabbit.core.persistence.util.*;
+import org.apache.jackrabbit.core.persistence.util.BLOBStore;
+import org.apache.jackrabbit.core.persistence.util.BundleBinding;
+import org.apache.jackrabbit.core.persistence.util.ErrorHandling;
+import org.apache.jackrabbit.core.persistence.util.FileSystemBLOBStore;
+import org.apache.jackrabbit.core.persistence.util.NodePropBundle;
 import org.apache.jackrabbit.core.state.ChangeLog;
 import org.apache.jackrabbit.core.state.ItemStateException;
 import org.apache.jackrabbit.core.state.NoSuchItemStateException;
@@ -33,8 +38,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jcr.PropertyType;
-import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -50,94 +58,129 @@ import java.util.function.Function;
  */
 public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
+    private static final int MIN_BLOB_SIZE = 0x1000;
     /**
-     * the default logger
+     * the default logger.
      */
-    private static Logger log = LoggerFactory.getLogger(OrientPersistenceManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OrientPersistenceManager.class);
+    private static final int POOL_MAX_SIZE = 50;
+    private static final int SB_CAPACITY = 35;
+    private static final int THIRTEEN = 13;
+    private static final int EIGHTEEN = 18;
+    private static final int TWENTYTHREE = 23;
+    private static final int EIGHT = 8;
 
     /**
-     * flag indicating if this manager was initialized
+     * flag indicating if this manager was initialized.
      */
-    protected boolean initialized;
+    private boolean initialized;
 
     /**
-     * prefix for orient classnames
+     * prefix for orient classnames.
      */
-    protected String objectPrefix;
+    private String objectPrefix;
 
     private String url;
     private String user = "admin";
     private String pass = "admin";
     private boolean createDB = true;
 
+    private FileSystem itemFs;
 
     private ODatabaseDocumentPool pool;
 
-    public String getUrl() {
+    /**
+     * gets the db url.
+     *
+     * @return the url
+     */
+    public final String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    /**
+     * sets the db url.
+     *
+     * @param myUrl the url
+     */
+    public final void setUrl(final String myUrl) {
+        this.url = myUrl;
     }
 
-    public String getSchemaObjectPrefix() {
+    /**
+     * gets the object prefix.
+     *
+     * @return the prefix
+     */
+    public final String getSchemaObjectPrefix() {
         return objectPrefix;
     }
 
-    public void setSchemaObjectPrefix(String objectPrefix) {
-        this.objectPrefix = objectPrefix;
+    /**
+     * sets the object prefix.
+     *
+     * @param objectPrefix1 the prefix
+     */
+    public final void setSchemaObjectPrefix(final String objectPrefix1) {
+        this.objectPrefix = objectPrefix1;
 
     }
 
-    public String getUser() {
+    /**
+     * gets the user.
+     *
+     * @return the user
+     */
+    public final String getUser() {
         return user;
     }
 
-    public void setUser(String user) {
-        this.user = user;
+    /**
+     * sets the user.
+     *
+     * @param user1 the user
+     */
+    public final void setUser(final String user1) {
+        this.user = user1;
     }
 
-    public String getPass() {
+    /**
+     * gets the password.
+     *
+     * @return the password
+     */
+    public final String getPass() {
         return pass;
     }
 
-    public void setPass(String pass) {
-        this.pass = pass;
+    /**
+     * sets the password.
+     *
+     * @param pass1 the password
+     */
+    public final void setPass(final String pass1) {
+        this.pass = pass1;
     }
 
+
     /**
-     * file system where BLOB data is stored
+     * the minimum size of a property until it gets written to the blob store.
      */
-    protected OrientPersistenceManager.CloseableBLOBStore blobStore;
-
-
-    private int blobFSBlockSize;
+    private int minBlobSize = MIN_BLOB_SIZE;
 
     /**
-     * the minimum size of a property until it gets written to the blob store
+     * the bundle binding.
      */
-    private int minBlobSize = 0x1000;
+    private BundleBinding binding;
+
 
     /**
-     * the filesystem where the items are stored
+     * flag for error handling.
      */
-    private FileSystem itemFs;
-
-
-    /**
-     * the bundle binding
-     */
-    protected BundleBinding binding;
-
+    private ErrorHandling errorHandling = new ErrorHandling();
 
     /**
-     * flag for error handling
-     */
-    protected ErrorHandling errorHandling = new ErrorHandling();
-
-    /**
-     * the name of this persistence manager
+     * the name of this persistence manager.
      */
     private String name = super.toString();
 
@@ -145,15 +188,14 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     private String bundleClassName;
     private String refsClassName;
 
+    /**
+     * file system where BLOB data is stored.
+     */
+    private OrientPersistenceManager.CloseableBLOBStore blobStore;
 
-    public String getObjectPrefix() {
-        return objectPrefix;
-    }
 
-    public void setObjectPrefix(String objectPrefix) {
-        this.objectPrefix = objectPrefix;
+    private int blobFSBlockSize;
 
-    }
 
     private Map<NodeId, BundleMapper> documentMap = new HashMap<NodeId, BundleMapper>();
 
@@ -161,18 +203,18 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      * Sets the error handling behaviour of this manager. See {@link ErrorHandling}
      * for details about the flags.
      *
-     * @param errorHandling
+     * @param myErrorHandling the error handling
      */
-    public void setErrorHandling(String errorHandling) {
-        this.errorHandling = new ErrorHandling(errorHandling);
+    public final void setErrorHandling(final String myErrorHandling) {
+        this.errorHandling = new ErrorHandling(myErrorHandling);
     }
 
     /**
-     * Returns the error handling configuration of this manager
+     * Returns the error handling configuration of this manager.
      *
      * @return the error handling configuration of this manager
      */
-    public String getErrorHandling() {
+    public final String getErrorHandling() {
         return errorHandling.toString();
     }
 
@@ -181,20 +223,26 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      * {@inheritDoc}
      */
     @Override
-    protected BLOBStore getBlobStore() {
+    protected final BLOBStore getBlobStore() {
         return blobStore;
     }
 
-    public boolean useLocalFsBlobStore() {
+    /**
+     * should blob store be used.
+     *
+     * @return the if blob store is used
+     */
+    public final boolean useLocalFsBlobStore() {
         return blobFSBlockSize == 0;
     }
 
 
-     private BinaryFileSystemHelper fileSystem;
+    private BinaryFileSystemHelper fileSystem;
+
     /**
      * {@inheritDoc}
      */
-    public void init(PMContext context) throws Exception {
+    public final void init(final PMContext context) throws Exception {
         if (initialized) {
             throw new IllegalStateException("already initialized");
         }
@@ -211,7 +259,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         }
 
         pool = new ODatabaseDocumentPool(url, "admin", "admin");
-        pool.setup(1, 50);
+        pool.setup(1, POOL_MAX_SIZE);
         super.init(context);
 
         // load namespaces
@@ -222,7 +270,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         this.name = context.getHomeDir().getName();
 
 
-        runWithDatabse(database -> {
+        runWithDatabase(database -> {
 
             OSchema schema = database.getMetadata().getSchema();
             bundleClassName = getSchemaObjectPrefix() + name + "Bundle";
@@ -250,16 +298,19 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         initialized = true;
     }
 
-    public synchronized void store(ChangeLog changeLog)
-            throws ItemStateException {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final synchronized void store(final ChangeLog changeLog) throws ItemStateException {
         documentMap.clear();
-        runWithDatabse(db -> {
+        runWithDatabase(db -> {
 
             try {
 
                 super.store(changeLog);
             } catch (ItemStateException e) {
-                log.error("jackrabbit", e);
+                LOG.error("jackrabbit", e);
             }
             return null;
         });
@@ -268,10 +319,16 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     }
 
 
-    protected Object runWithDatabse(Function<ODatabaseRecord, Object> function) {
+    /**
+     * runs in an orient transaction.
+     *
+     * @param function the lamba.
+     * @return the result
+     */
+    private Object runWithDatabase(final Function<ODatabaseRecord, Object> function) {
 
         ODatabaseDocumentTx closeDB = null;
-        ODatabaseRecord database = null;
+        ODatabaseRecord database;
         if (!ODatabaseRecordThreadLocal.INSTANCE.isDefined()) {
 
 
@@ -293,12 +350,12 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
             database.getTransaction().commit();
         } catch (OException x) {
             database.getTransaction().rollback();
-            log.error("DB error", x);
+            LOG.error("DB error", x);
             throw x;
         } finally {
             if (closeDB != null) {
 
-                pool.release(closeDB);
+                closeDB.close();
 
             }
         }
@@ -310,7 +367,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     /**
      * {@inheritDoc}
      */
-    public synchronized void close() throws Exception {
+    public final synchronized void close() throws Exception {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
@@ -328,9 +385,9 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     /**
      * {@inheritDoc}
      */
-    protected NodePropBundle loadBundle(NodeId id) throws ItemStateException {
+    protected final NodePropBundle loadBundle(final NodeId id) throws ItemStateException {
         try {
-            return (NodePropBundle) runWithDatabse(database -> {
+            return (NodePropBundle) runWithDatabase(database -> {
                 String uuid = id.toString();
 
                 ODocument doc = loadBundleDoc(uuid);
@@ -344,7 +401,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
             });
         } catch (Exception e) {
             String msg = "failed to read bundle: " + id + ": " + e;
-            log.error(msg);
+            LOG.error(msg);
             throw new ItemStateException(msg, e);
         }
     }
@@ -353,13 +410,17 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      * Creates the file path for the given node id that is
      * suitable for storing node states in a filesystem.
      *
-     * @param buf buffer to append to or <code>null</code>
-     * @param id  the id of the node
+     * @param pbuf buffer to append to or <code>null</code>
+     * @param id   the id of the node
      * @return the buffer with the appended data.
      */
-    protected StringBuffer buildNodeFilePath(StringBuffer buf, NodeId id) {
-        if (buf == null) {
+    @Override
+    protected final StringBuffer buildNodeFilePath(final StringBuffer pbuf, final NodeId id) {
+        StringBuffer buf;
+        if (pbuf == null) {
             buf = new StringBuffer();
+        } else {
+            buf = pbuf;
         }
         buildNodeFolderPath(buf, id);
         buf.append('.');
@@ -371,14 +432,17 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
      * Creates the file path for the given references id that is
      * suitable for storing reference states in a filesystem.
      *
-     * @param buf buffer to append to or <code>null</code>
-     * @param id  the id of the node
+     * @param pbuf buffer to append to or <code>null</code>
+     * @param id   the id of the node
      * @return the buffer with the appended data.
      */
-    protected StringBuffer buildNodeReferencesFilePath(
-            StringBuffer buf, NodeId id) {
-        if (buf == null) {
+    @Override
+    protected final StringBuffer buildNodeReferencesFilePath(final StringBuffer pbuf, final NodeId id) {
+        StringBuffer buf;
+        if (pbuf == null) {
             buf = new StringBuffer();
+        } else {
+            buf = pbuf;
         }
         buildNodeFolderPath(buf, id);
         buf.append('.');
@@ -389,8 +453,9 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     /**
      * {@inheritDoc}
      */
-    protected synchronized void storeBundle(NodePropBundle bundle) throws ItemStateException {
-        runWithDatabse(database -> {
+    @Override
+    protected final synchronized void storeBundle(final NodePropBundle bundle) throws ItemStateException {
+        runWithDatabase(database -> {
 
             try {
                 ODocument vertex = null;
@@ -401,7 +466,8 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
                     vertex = loadBundleDoc(bundle.getId().toString());
                 }
                 if (vertex == null) {
-                    throw new IllegalStateException("FATAL: Tried to update non existing bundle" + bundle.getId().toString());
+                    throw new IllegalStateException("FATAL: Tried to update non existing bundle" +
+                            bundle.getId().toString());
                 }
                 BundleMapper mapper = new BundleMapper(vertex, database, bundleClassName, fileSystem);
                 mapper.writePhase1(bundle);
@@ -413,7 +479,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
             } catch (Exception e) {
                 String msg = "failed to write bundle: " + bundle.getId();
-                OrientPersistenceManager.log.error(msg, e);
+                OrientPersistenceManager.LOG.error(msg, e);
 
             }
             return null;
@@ -424,9 +490,9 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     /**
      * {@inheritDoc}
      */
-    protected synchronized void destroyBundle(NodePropBundle bundle) throws ItemStateException {
+    protected final synchronized void destroyBundle(final NodePropBundle bundle) throws ItemStateException {
 
-        runWithDatabse(database -> {
+        runWithDatabase(database -> {
             try {
                 String uuid = bundle.getId().toString();
                 ODocument result = loadBundleDoc(uuid);
@@ -438,14 +504,19 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
                 result.delete();
             } catch (Exception e) {
                 String msg = "failed to delete bundle: " + bundle.getId();
-                OrientPersistenceManager.log.error(msg, e);
+                OrientPersistenceManager.LOG.error(msg, e);
 
             }
             return null;
         });
     }
 
-    private void cascadeDeleteToBlobs(ODocument result) {
+    /**
+     * deletes referenced blobs.
+     *
+     * @param result the document
+     */
+    private void cascadeDeleteToBlobs(final ODocument result) {
         List<ODocument> propertyDocs = result.field("properties", OType.EMBEDDEDLIST);
         if (propertyDocs != null) {
             for (ODocument pDoc : propertyDocs) {
@@ -465,12 +536,19 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         }
     }
 
-    private ODocument loadBundleDoc(String uuid) {
+    /**
+     * load a bundle doc.
+     *
+     * @param uuid the id
+     * @return the document
+     */
+    private ODocument loadBundleDoc(final String uuid) {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        return (ODocument) runWithDatabse(database -> {
-            OIndex<OIdentifiable> index = (OIndex<OIdentifiable>) database.getMetadata().getIndexManager().getIndex(bundleClassName + ".uuid");
+        return (ODocument) runWithDatabase(database -> {
+            OIndexManagerProxy indexManager = database.getMetadata().getIndexManager();
+            OIndex<OIdentifiable> index = (OIndex<OIdentifiable>) indexManager.getIndex(bundleClassName + ".uuid");
             OIdentifiable id = index.get(uuid);
             ODocument doc = null;
             if (id != null) {
@@ -483,10 +561,17 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
 
     }
 
-    private ODocument loadRefsDoc(String targetuuid) {
+    /**
+     * loads references.
+     *
+     * @param targetuuid the id
+     * @return the refs doc
+     */
+    private ODocument loadRefsDoc(final String targetuuid) {
 
-        return (ODocument) runWithDatabse(database -> {
-            OQuery<ODocument> query = new OSQLSynchQuery<ODocument>("select from " + refsClassName + " WHERE targetuuid = '" + targetuuid + "'");
+        return (ODocument) runWithDatabase(database -> {
+            OQuery<ODocument> query =
+                    new OSQLSynchQuery<>("select from " + refsClassName + " WHERE targetuuid = '" + targetuuid + "'");
             List<ODocument> result = database.query(query);
             if (result.size() == 0) {
                 return null;
@@ -499,15 +584,14 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     /**
      * {@inheritDoc}
      */
-    public synchronized NodeReferences loadReferencesTo(NodeId targetId)
-            throws NoSuchItemStateException, ItemStateException {
+    public final synchronized NodeReferences loadReferencesTo(final NodeId targetId) throws ItemStateException {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        return (NodeReferences) runWithDatabse(database -> {
+        NodeReferences result = (NodeReferences) runWithDatabase(database -> {
             ODocument refsDoc = loadRefsDoc(targetId.toString());
             if (refsDoc == null) {
-                throw new NullPointerException(targetId.toString());
+                return null;
             }
             NodeReferences refs = new NodeReferences(targetId);
             List<ODocument> refDocs = refsDoc.field("refs", OType.EMBEDDEDLIST);
@@ -517,17 +601,20 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
             }
             return refs;
         });
+        if (result == null) {
+            throw new NoSuchItemStateException(targetId.toString());
+        }
+        return result;
     }
 
     /**
      * {@inheritDoc}
      */
-    public synchronized void store(NodeReferences refs)
-            throws ItemStateException {
+    public final synchronized void store(final NodeReferences refs) throws ItemStateException {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        runWithDatabse(database -> {
+        runWithDatabase(database -> {
             ODocument refsDoc = loadRefsDoc(refs.getTargetId().toString());
             if (refsDoc == null) {
                 refsDoc = new ODocument(refsClassName);
@@ -550,11 +637,11 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     /**
      * {@inheritDoc}
      */
-    public synchronized void destroy(NodeReferences refs) throws ItemStateException {
+    public final synchronized void destroy(final NodeReferences refs) throws ItemStateException {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        runWithDatabse(database -> {
+        runWithDatabase(database -> {
             ODocument doc = loadRefsDoc(refs.getTargetId().toString());
             if (doc != null) {
                 doc.delete();
@@ -566,90 +653,45 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     /**
      * {@inheritDoc}
      */
-    public synchronized boolean existsReferencesTo(NodeId targetId) throws ItemStateException {
+    public final synchronized boolean existsReferencesTo(final NodeId targetId) throws ItemStateException {
         if (!initialized) {
             throw new IllegalStateException("not initialized");
         }
-        return (Boolean) runWithDatabse(database -> {
+        return (Boolean) runWithDatabase(database -> {
             ODocument doc = loadRefsDoc(targetId.toString());
             return doc != null;
         });
     }
 
-    /**
-     * logs an sql exception
-     *
-     * @param message
-     * @param se
-     */
-    protected void logException(String message, SQLException se) {
-        if (message != null) {
-            OrientPersistenceManager.log.error(message);
-        }
-        OrientPersistenceManager.log.error("       Reason: " + se.getMessage());
-        OrientPersistenceManager.log.error(
-                "   State/Code: " + se.getSQLState() + "/" + se.getErrorCode());
-        OrientPersistenceManager.log.debug("   dump:", se);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public String toString() {
-        return name;
-    }
-
-    public void setCreateDB(boolean createDB) {
-        this.createDB = createDB;
-    }
-
-    /**
-     * Helper interface for closeable stores
-     */
-    protected static interface CloseableBLOBStore extends BLOBStore {
-        void close();
-    }
-
-    /**
-     * own implementation of the filesystem blob store that uses a different
-     * blob-id scheme.
-     */
-    private class FSBlobStore extends FileSystemBLOBStore implements OrientPersistenceManager.CloseableBLOBStore {
-
-        private FileSystem fs;
-
-        public FSBlobStore(FileSystem fs) {
-            super(fs);
-            this.fs = fs;
-        }
-
-        public String createId(PropertyId id, int index) {
-            return buildBlobFilePath(null, id, index).toString();
-        }
-
-        public void close() {
-            try {
-                fs.close();
-                fs = null;
-            } catch (Exception e) {
-                // ignore
-            }
-        }
-
-    }
 
     /**
      * {@inheritDoc}
      */
-    public List<NodeId> getAllNodeIds(NodeId bigger, int maxCount)
-            throws ItemStateException {
+    public final String toString() {
+        return name;
+    }
+
+    /**
+     * should the db be created?
+     *
+     * @param pcreateDB wether the db should be created.
+     */
+    public final void setCreateDB(final boolean pcreateDB) {
+        this.createDB = pcreateDB;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public final List<NodeId> getAllNodeIds(final NodeId bigger, final int maxCount) throws ItemStateException {
         ArrayList<NodeId> list = new ArrayList<NodeId>();
         try {
-            getListRecursive(list, "", bigger == null ? null : bigger, maxCount);
+            getListRecursive(list, "", bigger, maxCount);
             return list;
         } catch (FileSystemException e) {
             String msg = "failed to read node list: " + bigger + ": " + e;
-            log.error(msg);
+            LOG.error(msg);
             throw new ItemStateException(msg, e);
         }
     }
@@ -657,8 +699,8 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     /**
      * {@inheritDoc}
      */
-    protected NodeId getIdFromFileName(String fileName) {
-        StringBuffer buff = new StringBuffer(35);
+    protected final NodeId getIdFromFileName(final String fileName) {
+        StringBuffer buff = new StringBuffer(SB_CAPACITY);
         if (!fileName.endsWith("." + NODEFILENAME)) {
             return null;
         }
@@ -670,7 +712,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
             if (c != '/') {
                 buff.append(c);
                 int len = buff.length();
-                if (len == 8 || len == 13 || len == 18 || len == 23) {
+                if (len == EIGHT || len == THIRTEEN || len == EIGHTEEN || len == TWENTYTHREE) {
                     buff.append('-');
                 }
             }
@@ -678,9 +720,17 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         return new NodeId(buff.toString());
     }
 
-    private void getListRecursive(
-            ArrayList<NodeId> list, String path, NodeId bigger, int maxCount)
-            throws FileSystemException {
+    /**
+     * gets a list from the filesystem.
+     *
+     * @param list     the list
+     * @param path     the path
+     * @param bigger   for recusrion
+     * @param maxCount up to max?
+     * @throws FileSystemException on fs errors
+     */
+    private void getListRecursive(final ArrayList<NodeId> list, final String path,
+                                  final NodeId bigger, final int maxCount) throws FileSystemException {
         if (maxCount > 0 && list.size() >= maxCount) {
             return;
         }
@@ -703,9 +753,61 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
         String[] dirs = itemFs.listFolders(path);
         Arrays.sort(dirs);
         for (int i = 0; i < dirs.length; i++) {
-            getListRecursive(list, path + FileSystem.SEPARATOR + dirs[i],
-                    bigger, maxCount);
+            getListRecursive(list, path + FileSystem.SEPARATOR + dirs[i], bigger, maxCount);
         }
+    }
+
+    /**
+     * Helper interface for closeable stores.
+     */
+    protected interface CloseableBLOBStore extends BLOBStore {
+        /**
+         * close this store.
+         */
+        void close();
+    }
+
+    /**
+     * own implementation of the filesystem blob store that uses a different
+     * blob-id scheme.
+     */
+    private class FSBlobStore extends FileSystemBLOBStore implements OrientPersistenceManager.CloseableBLOBStore {
+
+        private FileSystem fs;
+
+        /**
+         * init te blobstore.
+         *
+         * @param pfs the underlying filesystem.
+         */
+        public FSBlobStore(final FileSystem pfs) {
+            super(pfs);
+            this.fs = pfs;
+        }
+
+        /**
+         * create an id.
+         *
+         * @param id    the id
+         * @param index the index.
+         * @return the blob path,
+         */
+        public String createId(final PropertyId id, final int index) {
+            return buildBlobFilePath(null, id, index).toString();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public final void close() {
+            try {
+                fs.close();
+                fs = null;
+            } catch (Exception e) {
+                LOG.warn("close blob stors", e);
+            }
+        }
+
     }
 
 }

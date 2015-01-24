@@ -42,7 +42,7 @@ import java.util.Date;
  *
  * @test
  * @sources SetPropertyAssumeTypeTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetPropertyAssumeTypeTest
+ * @executeClass org.apache.SetPropertyAssumeTypeTest
  * @keywords level2
  */
 public class SetPropertyAssumeTypeTest extends AbstractJCRTest {

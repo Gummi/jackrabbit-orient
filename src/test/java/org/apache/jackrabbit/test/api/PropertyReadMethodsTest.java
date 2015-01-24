@@ -35,7 +35,7 @@ import java.util.NoSuchElementException;
  *
  * @test
  * @sources PropertyReadMethodsTest.java
- * @executeClass org.apache.jackrabbit.test.api.PropertyReadMethodsTest
+ * @executeClass org.apache.PropertyReadMethodsTest
  * @keywords level1
  */
 public class PropertyReadMethodsTest extends AbstractJCRTest {

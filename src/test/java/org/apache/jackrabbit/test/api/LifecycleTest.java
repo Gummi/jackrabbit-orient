@@ -31,7 +31,7 @@ import org.apache.jackrabbit.test.NotExecutableException;
  *
  * @test
  * @sources LifecycleTest.java
- * @executeClass org.apache.jackrabbit.test.api.LifecycleTest
+ * @executeClass org.apache.LifecycleTest
  */
 public class LifecycleTest extends AbstractJCRTest {
 

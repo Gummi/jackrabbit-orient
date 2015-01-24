@@ -37,7 +37,7 @@ import javax.jcr.query.QueryResult;
  *
  * @test
  * @sources XPathDocOrderTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.XPathDocOrderTest
+ * @executeClass org.apache.XPathDocOrderTest
  * @keywords level1
  */
 public class XPathDocOrderTest extends AbstractQueryTest {

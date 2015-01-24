@@ -36,7 +36,7 @@ import javax.jcr.Session;
  *
  * @test
  * @sources AddNodeTest.java
- * @executeClass org.apache.jackrabbit.test.api.AddNodeTest
+ * @executeClass org.apache.AddNodeTest
  * @keywords level2
  */
 public class AddNodeTest extends AbstractJCRTest {

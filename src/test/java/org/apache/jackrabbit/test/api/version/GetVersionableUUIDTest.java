@@ -18,7 +18,6 @@ package org.apache.jackrabbit.test.api.version;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
-import javax.jcr.version.VersionHistory;
 import javax.jcr.version.VersionManager;
 
 /**
@@ -27,7 +26,7 @@ import javax.jcr.version.VersionManager;
  *
  * @test
  * @sources GetVersionableUUIDTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.GetVersionableUUIDTest
+ * @executeClass org.apache.GetVersionableUUIDTest
  * @keywords versioning
  */
 public class GetVersionableUUIDTest extends AbstractVersionTest {

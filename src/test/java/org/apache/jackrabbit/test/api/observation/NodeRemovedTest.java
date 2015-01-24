@@ -32,7 +32,7 @@ import javax.jcr.observation.Event;
  *
  * @test
  * @sources NodeRemovedTest.java
- * @executeClass org.apache.jackrabbit.test.api.observation.NodeRemovedTest
+ * @executeClass org.apache.NodeRemovedTest
  * @keywords observation
  */
 public class NodeRemovedTest extends AbstractObservationTest {

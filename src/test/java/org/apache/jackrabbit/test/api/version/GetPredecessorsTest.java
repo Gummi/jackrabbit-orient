@@ -27,7 +27,7 @@ import javax.jcr.version.VersionManager;
  *
  * @test
  * @sources GetPredecessorsTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.GetPredecessorsTest
+ * @executeClass org.apache.GetPredecessorsTest
  * @keywords versioning
  */
 public class GetPredecessorsTest extends AbstractVersionTest {

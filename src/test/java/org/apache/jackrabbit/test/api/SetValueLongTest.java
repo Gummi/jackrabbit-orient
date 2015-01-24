@@ -36,7 +36,7 @@ import javax.jcr.PathNotFoundException;
  *
  * @test
  * @sources SetValueLongTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetValueLongTest
+ * @executeClass org.apache.SetValueLongTest
  * @keywords level2
  */
 public class SetValueLongTest extends AbstractJCRTest {

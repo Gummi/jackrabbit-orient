@@ -62,7 +62,7 @@ import java.io.BufferedInputStream;
  *
  * @test
  * @sources StringPropertyTest.java
- * @executeClass org.apache.jackrabbit.test.api.StringPropertyTest
+ * @executeClass org.apache.StringPropertyTest
  * @keywords level1
  */
 public class StringPropertyTest extends AbstractPropertyTest {

@@ -28,7 +28,7 @@ import javax.jcr.query.Query;
  *
  * @test
  * @sources XPathOrderByTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.XPathOrderByTest
+ * @executeClass org.apache.XPathOrderByTest
  * @keywords level1
  */
 public class XPathOrderByTest extends AbstractQueryTest {

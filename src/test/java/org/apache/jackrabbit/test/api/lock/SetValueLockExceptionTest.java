@@ -38,7 +38,7 @@ import java.io.ByteArrayInputStream;
  *
  * @test
  * @sources SetValueLockExceptionTest.java
- * @executeClass org.apache.jackrabbit.test.api.lock.SetValueLockExceptionTest
+ * @executeClass org.apache.SetValueLockExceptionTest
  * @keywords level2
  */
 public class SetValueLockExceptionTest extends AbstractJCRTest {

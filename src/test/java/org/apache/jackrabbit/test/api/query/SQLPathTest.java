@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @test
  * @sources SQLPathTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.SQLPathTest
+ * @executeClass org.apache.SQLPathTest
  * @keywords sql
  */
 public class SQLPathTest extends AbstractQueryTest {

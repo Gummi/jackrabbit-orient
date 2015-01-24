@@ -36,7 +36,7 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
  *
  * @test
  * @sources NodeAddMixinTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeAddMixinTest
+ * @executeClass org.apache.NodeAddMixinTest
  * @keywords level2
  */
 public class NodeAddMixinTest extends AbstractJCRTest {

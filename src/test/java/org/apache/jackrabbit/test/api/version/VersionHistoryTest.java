@@ -53,7 +53,7 @@ import javax.jcr.version.VersionManager;
  *
  * @test
  * @sources VersionHistoryTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.VersionHistoryTest
+ * @executeClass org.apache.VersionHistoryTest
  * @keywords versioning
  */
 public class VersionHistoryTest extends AbstractVersionTest {

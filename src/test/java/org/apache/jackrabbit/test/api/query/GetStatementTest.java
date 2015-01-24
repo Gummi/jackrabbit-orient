@@ -25,7 +25,7 @@ import javax.jcr.Session;
  *
  * @test
  * @sources GetStatementTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.GetStatementTest
+ * @executeClass org.apache.GetStatementTest
  * @keywords level1
  */
 public class GetStatementTest extends AbstractQueryTest {

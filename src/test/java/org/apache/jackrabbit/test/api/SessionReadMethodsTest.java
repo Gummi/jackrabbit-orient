@@ -32,7 +32,7 @@ import javax.jcr.NodeIterator;
  *
  * @test
  * @sources SessionReadMethodsTest.java
- * @executeClass org.apache.jackrabbit.test.api.SessionReadMethodsTest
+ * @executeClass org.apache.SessionReadMethodsTest
  * @keywords level1
  */
 public class SessionReadMethodsTest extends AbstractJCRTest {

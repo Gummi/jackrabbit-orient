@@ -33,7 +33,7 @@ import org.apache.jackrabbit.test.NotExecutableException;
  *
  * @test
  * @sources LockTest.java
- * @executeClass org.apache.jackrabbit.test.api.lock.LockTest
+ * @executeClass org.apache.LockTest
  * @keywords locking
  *
  * @tck.config testroot must allow child nodes of type <code>nodetype</code>

@@ -33,7 +33,7 @@ import java.util.TimeZone;
  *
  * @test
  * @sources OrderByDateTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.OrderByDateTest
+ * @executeClass org.apache.OrderByDateTest
  * @keywords level2
  */
 public class OrderByDateTest extends AbstractOrderByTest {

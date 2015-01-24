@@ -39,7 +39,7 @@ import javax.jcr.PathNotFoundException;
  *
  * @test
  * @sources SetValueReferenceTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetValueReferenceTest
+ * @executeClass org.apache.SetValueReferenceTest
  * @keywords level2
  */
 public class SetValueReferenceTest extends AbstractJCRTest {

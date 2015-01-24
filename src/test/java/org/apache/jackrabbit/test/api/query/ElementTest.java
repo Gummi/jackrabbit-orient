@@ -36,7 +36,7 @@ import javax.jcr.Node;
  *
  * @test
  * @sources ElementTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.ElementTest
+ * @executeClass org.apache.ElementTest
  * @keywords level2
  */
 public class ElementTest extends AbstractQueryTest {

@@ -39,7 +39,7 @@ import java.util.regex.Matcher;
  *
  * @test
  * @sources PropertyDefTest.java
- * @executeClass org.apache.jackrabbit.test.api.nodetype.PropertyDefTest
+ * @executeClass org.apache.PropertyDefTest
  * @keywords level1
  */
 public class PropertyDefTest extends AbstractJCRTest {

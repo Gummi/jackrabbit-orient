@@ -36,7 +36,7 @@ import org.apache.jackrabbit.test.AbstractJCRTest;
  *
  * @test
  * @sources NamespaceRemappingTest.java
- * @executeClass org.apache.jackrabbit.test.api.NamespaceRemappingTest
+ * @executeClass org.apache.NamespaceRemappingTest
  * @keywords level1
  */
 public class NamespaceRemappingTest extends AbstractJCRTest {

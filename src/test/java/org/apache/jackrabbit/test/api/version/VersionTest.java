@@ -45,7 +45,7 @@ import java.io.ByteArrayInputStream;
  *
  * @test
  * @sources VersionTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.VersionTest
+ * @executeClass org.apache.VersionTest
  * @keywords versioning
  */
 public class VersionTest extends AbstractVersionTest {

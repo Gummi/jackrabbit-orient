@@ -27,7 +27,7 @@ import javax.jcr.Value;
  *
  * @test
  * @sources SQLQueryLevel2Test.java
- * @executeClass org.apache.jackrabbit.test.api.query.SQLQueryLevel2Test
+ * @executeClass org.apache.SQLQueryLevel2Test
  * @keywords level2 sql
  */
 public class SQLQueryLevel2Test extends AbstractQueryLevel2Test {

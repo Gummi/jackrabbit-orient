@@ -39,7 +39,7 @@ import javax.jcr.observation.Event;
  *
  * @test
  * @sources NodeReorderTest.java
- * @executeClass org.apache.jackrabbit.test.api.observation.NodeReorderTest
+ * @executeClass org.apache.NodeReorderTest
  * @keywords observation
  */
 public class NodeReorderTest extends AbstractObservationTest {

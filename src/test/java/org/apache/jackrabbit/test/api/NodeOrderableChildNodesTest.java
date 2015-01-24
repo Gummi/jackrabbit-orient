@@ -25,7 +25,6 @@ import javax.jcr.ItemNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.NodeIterator;
-import javax.jcr.Session;
 
 /**
  * <code>NodeOrderableChildNodesTest</code> contains all node writing tests (LEVEL 2) that require a node
@@ -44,7 +43,7 @@ import javax.jcr.Session;
  *
  * @test
  * @sources NodeOrderableChildNodesTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeOrderableChildNodesTest
+ * @executeClass org.apache.NodeOrderableChildNodesTest
  * @keywords level2
  */
 public class NodeOrderableChildNodesTest extends AbstractJCRTest {

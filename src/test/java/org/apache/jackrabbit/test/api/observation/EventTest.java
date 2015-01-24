@@ -30,7 +30,7 @@ import javax.jcr.Node;
  *
  * @test
  * @sources EventTest.java
- * @executeClass org.apache.jackrabbit.test.api.observation.EventTest
+ * @executeClass org.apache.EventTest
  * @keywords observation
  */
 public class EventTest extends AbstractObservationTest {

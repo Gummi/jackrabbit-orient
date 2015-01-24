@@ -20,7 +20,6 @@ import org.apache.jackrabbit.test.AbstractJCRTest;
 import org.apache.jackrabbit.test.NotExecutableException;
 import org.apache.jackrabbit.test.api.util.ISO9075;
 
-import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.RowIterator;
 import javax.jcr.query.Query;

@@ -27,7 +27,7 @@ import javax.jcr.version.Version;
  *
  * @test
  * @sources GetCreatedTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.GetCreatedTest
+ * @executeClass org.apache.GetCreatedTest
  * @keywords versioning
  */
 public class GetCreatedTest extends AbstractVersionTest {

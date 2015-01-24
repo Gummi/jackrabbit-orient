@@ -34,7 +34,7 @@ import java.text.ParseException;
  *
  * @test
  * @sources CanSetPropertyDateTest.java
- * @executeClass org.apache.jackrabbit.test.api.nodetype.CanSetPropertyDateTest
+ * @executeClass org.apache.CanSetPropertyDateTest
  * @keywords level2
  */
 public class CanSetPropertyDateTest extends AbstractJCRTest {

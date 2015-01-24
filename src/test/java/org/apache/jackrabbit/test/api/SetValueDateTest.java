@@ -38,7 +38,7 @@ import java.util.Calendar;
  *
  * @test
  * @sources SetValueDateTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetValueDateTest
+ * @executeClass org.apache.SetValueDateTest
  * @keywords level2
  */
 public class SetValueDateTest extends AbstractJCRTest {

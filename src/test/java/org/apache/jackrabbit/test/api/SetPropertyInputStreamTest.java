@@ -31,7 +31,7 @@ import java.io.ByteArrayInputStream;
  *
  * @test
  * @sources SetPropertyInputStreamTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetPropertyInputStreamTest
+ * @executeClass org.apache.SetPropertyInputStreamTest
  * @keywords level2
  */
 public class SetPropertyInputStreamTest extends AbstractJCRTest {

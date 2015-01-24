@@ -38,7 +38,7 @@ import java.io.IOException;
  *
  * @test
  * @sources DocumentViewImportTest.java
- * @executeClass org.apache.jackrabbit.test.api.DocumentViewImportTest
+ * @executeClass org.apache.DocumentViewImportTest
  * @keywords level2
  */
 public class DocumentViewImportTest extends AbstractImportXmlTest {

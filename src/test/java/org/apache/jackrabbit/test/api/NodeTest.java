@@ -40,7 +40,7 @@ import javax.jcr.lock.LockException;
  *
  * @test
  * @sources NodeTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeTest
+ * @executeClass org.apache.NodeTest
  * @keywords level2
  */
 public class NodeTest extends AbstractJCRTest {

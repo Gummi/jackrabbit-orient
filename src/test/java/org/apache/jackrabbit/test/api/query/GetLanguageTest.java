@@ -28,7 +28,7 @@ import org.apache.jackrabbit.test.NotExecutableException;
  *
  * @test
  * @sources GetLanguageTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.GetLanguageTest
+ * @executeClass org.apache.GetLanguageTest
  * @keywords level1
  */
 public class GetLanguageTest extends AbstractQueryTest {

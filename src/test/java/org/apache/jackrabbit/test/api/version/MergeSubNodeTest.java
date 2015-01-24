@@ -27,7 +27,7 @@ import javax.jcr.version.VersionManager;
  *
  * @test
  * @sources MergeSubNodeTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.MergeSubNodeTest
+ * @executeClass org.apache.MergeSubNodeTest
  * @keywords versioning
  */
 

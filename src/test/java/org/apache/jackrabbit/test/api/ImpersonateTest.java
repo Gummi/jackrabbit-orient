@@ -20,7 +20,6 @@ import org.apache.jackrabbit.test.AbstractJCRTest;
 import org.apache.jackrabbit.test.NotExecutableException;
 
 import javax.jcr.Session;
-import javax.jcr.Credentials;
 import javax.jcr.NodeIterator;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -33,7 +32,7 @@ import java.security.AccessControlException;
  *
  * @test
  * @sources ImpersonateTest.java
- * @executeClass org.apache.jackrabbit.test.api.ImpersonateTest
+ * @executeClass org.apache.ImpersonateTest
  * @keywords level2
  */
 public class ImpersonateTest extends AbstractJCRTest {

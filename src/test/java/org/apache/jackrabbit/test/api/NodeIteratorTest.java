@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
  *
  * @test
  * @sources NodeIteratorTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeIteratorTest
+ * @executeClass org.apache.NodeIteratorTest
  * @keywords level1
  */
 public class NodeIteratorTest extends AbstractJCRTest {

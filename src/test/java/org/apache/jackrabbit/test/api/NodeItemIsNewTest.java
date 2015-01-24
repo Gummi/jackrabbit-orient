@@ -32,7 +32,7 @@ import javax.jcr.RepositoryException;
  *
  * @test
  * @sources NodeItemIsNewTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeItemIsNewTest
+ * @executeClass org.apache.NodeItemIsNewTest
  * @keywords level2
  */
 public class NodeItemIsNewTest extends AbstractJCRTest {

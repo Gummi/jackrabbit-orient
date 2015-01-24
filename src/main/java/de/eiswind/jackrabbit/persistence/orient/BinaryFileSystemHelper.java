@@ -18,47 +18,66 @@ public class BinaryFileSystemHelper {
     private static Logger log = LoggerFactory.getLogger(BinaryFileSystemHelper.class);
     private final FileSystem fileSystem;
 
-    public BinaryFileSystemHelper(FileSystem fileSystem){
-        this.fileSystem = fileSystem;
+    /**
+     * create a filesystem helper.
+     *
+     * @param pfileSystem the filesystem
+     */
+    public BinaryFileSystemHelper(final FileSystem pfileSystem) {
+        this.fileSystem = pfileSystem;
         try {
-            if(!fileSystem.exists("docs")){
+            if (!fileSystem.exists("docs")) {
                 fileSystem.createFolder("docs");
             }
         } catch (FileSystemException e) {
-           log.error("Create docs",e);
+            log.error("Create docs", e);
         }
     }
 
-    public String write(InputStream in){
+    /**
+     * write a stream.
+     * @param in the stream.
+     * @return the id.
+     */
+    public final String write(final InputStream in) {
         String id = UUID.randomUUID().toString();
-        String folder = id.substring(0,2);
+        String folder = id.substring(0, 2);
         try {
-            if(!fileSystem.exists("docs/"+folder)){
-                fileSystem.createFolder("docs/"+folder);
+            if (!fileSystem.exists("docs/" + folder)) {
+                fileSystem.createFolder("docs/" + folder);
             }
-            IOUtils.copy(in,fileSystem.getOutputStream("docs/"+folder+"/"+id));
+            IOUtils.copy(in, fileSystem.getOutputStream("docs/" + folder + "/" + id));
             return id;
-        } catch (IOException|FileSystemException e) {
-            log.error("write blob "+id);
-            throw new RuntimeException("write blob",e);
+        } catch (IOException | FileSystemException e) {
+            log.error("write blob " + id);
+            throw new RuntimeException("write blob", e);
         }
     }
 
-    public InputStream read(String id){
-        String path = "docs/"+id.substring(0,2)+"/"+id;
+    /**
+     * read a stream.
+     * @param id the id
+     * @return the stream
+     */
+    public final InputStream read(final String id) {
+        String path = "docs/" + id.substring(0, 2) + "/" + id;
         try {
-            if(!fileSystem.exists(path)){
-                throw new RuntimeException("Blob not found "+path);
+            if (!fileSystem.exists(path)) {
+                throw new RuntimeException("Blob not found " + path);
             }
             return fileSystem.getInputStream(path);
         } catch (FileSystemException e) {
-            log.error("read "+path+" failed");
-            throw new RuntimeException("read ",e);
+            log.error("read " + path + " failed");
+            throw new RuntimeException("read ", e);
         }
     }
 
-    public void delete(String id){
-        String path = "docs/"+id.substring(0,2)+"/"+id;
+    /**
+     * delete a file.
+     * @param id the id
+     */
+    public final void delete(final String id) {
+        String path = "docs/" + id.substring(0, 2) + "/" + id;
 
         try {
             if (!fileSystem.exists(path)) {
@@ -66,8 +85,8 @@ public class BinaryFileSystemHelper {
             }
             fileSystem.deleteFile(path);
         } catch (FileSystemException e) {
-            log.error("delete "+path);
-            throw new RuntimeException("delete",e);
+            log.error("delete " + path);
+            throw new RuntimeException("delete", e);
         }
     }
 }

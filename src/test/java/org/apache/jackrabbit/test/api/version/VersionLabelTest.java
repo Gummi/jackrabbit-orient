@@ -41,7 +41,7 @@ import javax.jcr.version.VersionManager;
  *
  * @test
  * @sources VersionLabelTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.VersionLabelTest
+ * @executeClass org.apache.VersionLabelTest
  * @keywords versioning
  */
 public class VersionLabelTest extends AbstractVersionTest {

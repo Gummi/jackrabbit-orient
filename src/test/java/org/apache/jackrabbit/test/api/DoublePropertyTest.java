@@ -32,7 +32,7 @@ import java.io.InputStream;
  *
  * @test
  * @sources DoublePropertyTest.java
- * @executeClass org.apache.jackrabbit.test.api.DoublePropertyTest
+ * @executeClass org.apache.DoublePropertyTest
  * @keywords level1
  */
 public class DoublePropertyTest extends AbstractPropertyTest {

@@ -27,7 +27,7 @@ import javax.jcr.RepositoryException;
  *
  * @test
  * @sources WorkspaceMoveReferenceableTest.java
- * @executeClass org.apache.jackrabbit.test.api.WorkspaceMoveReferenceableTest
+ * @executeClass org.apache.WorkspaceMoveReferenceableTest
  * @keywords level2
  */
 public class WorkspaceMoveReferenceableTest extends AbstractWorkspaceReferenceableTest {

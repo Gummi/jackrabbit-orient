@@ -27,7 +27,7 @@ import javax.jcr.RepositoryException;
  *
  * @test
  * @sources WorkspaceCopyBetweenWorkspacesSameNameSibsTest.java
- * @executeClass org.apache.jackrabbit.test.api.WorkspaceCopyBetweenWorkspacesSameNameSibsTest
+ * @executeClass org.apache.WorkspaceCopyBetweenWorkspacesSameNameSibsTest
  * @keywords level2
  */
 public class WorkspaceCopyBetweenWorkspacesSameNameSibsTest extends AbstractWorkspaceSameNameSibsTest {

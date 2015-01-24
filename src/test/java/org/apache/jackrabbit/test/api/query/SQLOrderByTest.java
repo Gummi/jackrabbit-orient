@@ -29,7 +29,7 @@ import javax.jcr.query.Query;
  *
  * @test
  * @sources SQLOrderByTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.SQLOrderByTest
+ * @executeClass org.apache.SQLOrderByTest
  * @keywords sql
  */
 public class SQLOrderByTest extends AbstractQueryTest {

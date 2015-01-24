@@ -31,7 +31,7 @@ import javax.jcr.nodetype.NodeType;
  *
  * @test
  * @sources CanAddChildNodeCallWithoutNodeTypeTest.java
- * @executeClass org.apache.jackrabbit.test.api.nodetype.CanAddChildNodeCallWithoutNodeTypeTest
+ * @executeClass org.apache.CanAddChildNodeCallWithoutNodeTypeTest
  * @keywords level1
  */
 public class CanAddChildNodeCallWithoutNodeTypeTest extends AbstractJCRTest {

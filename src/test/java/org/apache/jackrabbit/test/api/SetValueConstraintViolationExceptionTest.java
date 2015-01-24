@@ -40,7 +40,7 @@ import java.io.IOException;
  *
  * @test
  * @sources SetValueConstraintViolationExceptionTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetValueConstraintViolationExceptionTest
+ * @executeClass org.apache.SetValueConstraintViolationExceptionTest
  * @keywords level2
  */
 public class SetValueConstraintViolationExceptionTest extends AbstractJCRTest {

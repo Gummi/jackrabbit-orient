@@ -38,7 +38,7 @@ import java.util.Calendar;
  *
  * @test
  * @sources SetValueValueFormatExceptionTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetValueValueFormatExceptionTest
+ * @executeClass org.apache.SetValueValueFormatExceptionTest
  * @keywords level2
  */
 public class SetValueValueFormatExceptionTest extends AbstractJCRTest {

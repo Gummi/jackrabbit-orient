@@ -27,7 +27,7 @@ import javax.jcr.Node;
  *
  * @test
  * @sources SetPropertyLongTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetPropertyLongTest
+ * @executeClass org.apache.SetPropertyLongTest
  * @keywords level2
  */
 public class SetPropertyLongTest extends AbstractJCRTest {

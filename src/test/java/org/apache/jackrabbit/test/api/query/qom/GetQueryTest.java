@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
 
-import javax.jcr.query.QueryManager;
 import javax.jcr.query.Query;
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.qom.QueryObjectModel;

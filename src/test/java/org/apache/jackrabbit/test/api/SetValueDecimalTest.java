@@ -38,7 +38,7 @@ import javax.jcr.PathNotFoundException;
  *
  * @test
  * @sources SetValueDecimalTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetValueDecimalTest
+ * @executeClass org.apache.SetValueDecimalTest
  * @keywords level2
  */
 public class SetValueDecimalTest extends AbstractJCRTest {

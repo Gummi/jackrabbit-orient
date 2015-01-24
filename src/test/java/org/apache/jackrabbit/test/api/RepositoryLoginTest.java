@@ -29,7 +29,7 @@ import javax.jcr.Session;
  *
  * @test
  * @sources RepositoryLoginTest.java
- * @executeClass org.apache.jackrabbit.test.api.RepositoryLoginTest
+ * @executeClass org.apache.RepositoryLoginTest
  * @keywords level1
  */
 public class RepositoryLoginTest extends AbstractJCRTest {

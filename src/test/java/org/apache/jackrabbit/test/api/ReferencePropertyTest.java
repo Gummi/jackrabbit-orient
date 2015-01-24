@@ -31,7 +31,7 @@ import javax.jcr.ValueFormatException;
  *
  * @test
  * @sources ReferencePropertyTest.java
- * @executeClass org.apache.jackrabbit.test.api.ReferencePropertyTest
+ * @executeClass org.apache.ReferencePropertyTest
  * @keywords level1
  */
 public class ReferencePropertyTest extends AbstractPropertyTest {

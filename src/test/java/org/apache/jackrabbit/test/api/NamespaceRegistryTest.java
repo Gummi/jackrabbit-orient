@@ -36,7 +36,7 @@ import java.util.Set;
  *
  * @test
  * @sources NamespaceRegistryTest.java
- * @executeClass org.apache.jackrabbit.test.api.NamespaceRegistryTest
+ * @executeClass org.apache.NamespaceRegistryTest
  * @keywords level2
  */
 public class NamespaceRegistryTest extends AbstractJCRTest {

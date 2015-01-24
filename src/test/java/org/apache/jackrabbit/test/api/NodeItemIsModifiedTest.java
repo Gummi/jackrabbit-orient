@@ -33,7 +33,7 @@ import javax.jcr.RepositoryException;
  *
  * @test
  * @sources NodeItemIsModifiedTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeItemIsModifiedTest
+ * @executeClass org.apache.NodeItemIsModifiedTest
  * @keywords level2
  */
 public class NodeItemIsModifiedTest extends AbstractJCRTest {

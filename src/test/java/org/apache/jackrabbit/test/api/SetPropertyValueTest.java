@@ -33,7 +33,7 @@ import java.util.Arrays;
  *
  * @test
  * @sources SetPropertyValueTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetPropertyValueTest
+ * @executeClass org.apache.SetPropertyValueTest
  * @keywords level2
  */
 public class SetPropertyValueTest extends AbstractJCRTest {

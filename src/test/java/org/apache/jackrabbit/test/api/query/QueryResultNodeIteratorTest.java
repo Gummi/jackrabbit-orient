@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
  *
  * @test
  * @sources QueryResultNodeIteratorTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.QueryResultNodeIteratorTest
+ * @executeClass org.apache.QueryResultNodeIteratorTest
  * @keywords level2
  */
 public class QueryResultNodeIteratorTest extends AbstractQueryTest {

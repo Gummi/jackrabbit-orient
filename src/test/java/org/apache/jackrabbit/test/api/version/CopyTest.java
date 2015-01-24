@@ -23,8 +23,6 @@ import javax.jcr.version.VersionHistory;
 import javax.jcr.version.VersionManager;
 import javax.jcr.version.Version;
 
-import org.apache.jackrabbit.test.api.version.simple.AbstractVersionTest;
-
 /**
  * <code>CopyTest</code> checks if full versionable nodes are copied correctly:
  *
@@ -46,7 +44,7 @@ import org.apache.jackrabbit.test.api.version.simple.AbstractVersionTest;
  * @executeClass javax.jcr.version.CopyTest
  * @keywords versioning
  */
-public class CopyTest extends AbstractVersionTest {
+public class CopyTest extends org.apache.jackrabbit.test.api.version.simple.AbstractVersionTest {
 
     protected void setUp() throws Exception {
         super.setUp();

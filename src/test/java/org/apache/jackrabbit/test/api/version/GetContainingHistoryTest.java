@@ -25,7 +25,7 @@ import javax.jcr.RepositoryException;
  *
  * @test
  * @sources GetContainingHistoryTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.GetContainingHistoryTest
+ * @executeClass org.apache.GetContainingHistoryTest
  * @keywords versioning
  */
 public class GetContainingHistoryTest extends AbstractVersionTest {

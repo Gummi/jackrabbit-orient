@@ -44,7 +44,7 @@ import javax.jcr.Value;
  *
  * @test
  * @sources SetValueBinaryTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetValueBinaryTest
+ * @executeClass org.apache.SetValueBinaryTest
  * @keywords level2
  */
 public class SetValueBinaryTest extends AbstractJCRTest {

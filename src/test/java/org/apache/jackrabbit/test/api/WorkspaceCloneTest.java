@@ -33,7 +33,7 @@ import org.apache.jackrabbit.test.NotExecutableException;
  *
  * @test
  * @sources WorkspaceCloneTest.java
- * @executeClass org.apache.jackrabbit.test.api.WorkspaceCloneTest
+ * @executeClass org.apache.WorkspaceCloneTest
  * @keywords level2
  */
 public class WorkspaceCloneTest extends AbstractWorkspaceCopyBetweenTest {

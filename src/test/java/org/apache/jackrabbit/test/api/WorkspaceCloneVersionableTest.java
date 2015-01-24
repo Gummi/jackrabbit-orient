@@ -28,7 +28,7 @@ import org.apache.jackrabbit.test.NotExecutableException;
  *
  * @test
  * @sources WorkspaceCloneVersionableTest.java
- * @executeClass org.apache.jackrabbit.test.api.WorkspaceCloneVersionableTest
+ * @executeClass org.apache.WorkspaceCloneVersionableTest
  * @keywords level2 versioning
  */
 public class WorkspaceCloneVersionableTest extends AbstractWorkspaceVersionableTest {

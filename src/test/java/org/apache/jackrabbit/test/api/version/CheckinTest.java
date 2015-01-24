@@ -29,7 +29,7 @@ import java.util.Arrays;
  *
  * @test
  * @sources CheckinTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.CheckinTest
+ * @executeClass org.apache.CheckinTest
  * @keywords versioning
  */
 public class CheckinTest extends AbstractVersionTest {

@@ -26,7 +26,7 @@ import javax.jcr.version.VersionException;
  *
  * @test
  * @sources WorkspaceMoveVersionExceptionTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.WorkspaceMoveVersionExceptionTest
+ * @executeClass org.apache.WorkspaceMoveVersionExceptionTest
  * @keywords versioning
  */
 public class WorkspaceMoveVersionExceptionTest extends AbstractVersionTest {

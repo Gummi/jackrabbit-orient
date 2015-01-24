@@ -34,7 +34,7 @@ import java.text.ParseException;
  *
  * @test
  * @sources CanSetPropertyPathPath.java
- * @executeClass org.apache.jackrabbit.test.api.nodetype.CanSetPropertyPathTest
+ * @executeClass org.apache.CanSetPropertyPathTest
  * @keywords level2
  */
 public class CanSetPropertyPathTest extends AbstractJCRTest {

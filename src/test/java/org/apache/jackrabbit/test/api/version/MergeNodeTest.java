@@ -37,7 +37,7 @@ import javax.jcr.lock.LockException;
  *
  * @test
  * @sources MergeNodeTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.MergeNodeTest
+ * @executeClass org.apache.MergeNodeTest
  * @keywords versioning
  */
 

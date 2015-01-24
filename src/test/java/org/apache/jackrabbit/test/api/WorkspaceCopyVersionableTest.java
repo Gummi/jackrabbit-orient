@@ -29,7 +29,7 @@ import javax.jcr.version.VersionException;
  *
  * @test
  * @sources WorkspaceCopyVersionableTest.java
- * @executeClass org.apache.jackrabbit.test.api.WorkspaceCopyVersionableTest
+ * @executeClass org.apache.WorkspaceCopyVersionableTest
  * @keywords level2 versionable
  */
 public class WorkspaceCopyVersionableTest extends AbstractWorkspaceVersionableTest {

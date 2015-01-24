@@ -32,7 +32,7 @@ import javax.jcr.nodetype.PropertyDefinition;
  *
  * @test
  * @sources CanRemoveItemTest.java
- * @executeClass org.apache.jackrabbit.test.api.nodetype.CanRemoveItemTest
+ * @executeClass org.apache.CanRemoveItemTest
  * @keywords level1
  */
 public class CanRemoveItemTest extends AbstractJCRTest {

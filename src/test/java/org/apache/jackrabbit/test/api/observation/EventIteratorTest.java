@@ -39,7 +39,7 @@ import java.util.NoSuchElementException;
  *
  * @test
  * @sources EventIteratorTest.java
- * @executeClass org.apache.jackrabbit.test.api.observation.EventIteratorTest
+ * @executeClass org.apache.EventIteratorTest
  * @keywords observation
  */
 public class EventIteratorTest extends AbstractObservationTest{

@@ -30,7 +30,7 @@ package org.apache.jackrabbit.test.api.query;
  *
  * @test
  * @sources OrderByLongTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.OrderByLongTest
+ * @executeClass org.apache.OrderByLongTest
  * @keywords level2
  */
 public class OrderByLongTest extends AbstractOrderByTest {

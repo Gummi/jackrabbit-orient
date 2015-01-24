@@ -28,7 +28,7 @@ import java.security.AccessControlException;
  *
  * @test
  * @sources CheckPermissionTest.java
- * @executeClass org.apache.jackrabbit.test.api.CheckPermissionTest
+ * @executeClass org.apache.CheckPermissionTest
  * @keywords level2
  */
 public class CheckPermissionTest extends AbstractJCRTest {

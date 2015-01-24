@@ -35,7 +35,7 @@ import javax.jcr.ValueFormatException;
  *
  * @test
  * @sources BinaryPropertyTest.java
- * @executeClass org.apache.jackrabbit.test.api.BinaryPropertyTest
+ * @executeClass org.apache.BinaryPropertyTest
  * @keywords level1
  */
 public class BinaryPropertyTest extends AbstractPropertyTest {

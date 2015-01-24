@@ -33,7 +33,7 @@ import javax.jcr.Node;
  *
  * @test
  * @sources SQLJoinTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.SQLJoinTest
+ * @executeClass org.apache.SQLJoinTest
  * @keywords sql
  */
 public class SQLJoinTest extends AbstractQueryTest {

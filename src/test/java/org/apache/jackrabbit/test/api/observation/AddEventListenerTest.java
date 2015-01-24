@@ -40,7 +40,7 @@ import javax.jcr.Session;
  *
  * @test
  * @sources AddEventListenerTest.java
- * @executeClass org.apache.jackrabbit.test.api.observation.AddEventListenerTest
+ * @executeClass org.apache.AddEventListenerTest
  * @keywords observation
  */
 public class AddEventListenerTest extends AbstractObservationTest {

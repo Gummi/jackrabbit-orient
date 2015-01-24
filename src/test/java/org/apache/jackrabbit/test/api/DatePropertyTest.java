@@ -32,7 +32,7 @@ import java.io.InputStream;
  *
  * @test
  * @sources DatePropertyTest.java
- * @executeClass org.apache.jackrabbit.test.api.DatePropertyTest
+ * @executeClass org.apache.DatePropertyTest
  * @keywords level1
  */
 public class DatePropertyTest extends AbstractPropertyTest {

@@ -27,7 +27,7 @@ import javax.jcr.NodeIterator;
  *
  * @test
  * @sources XPathQueryLevel2Test.java
- * @executeClass org.apache.jackrabbit.test.api.query.XPathQueryLevel2Test
+ * @executeClass org.apache.XPathQueryLevel2Test
  * @keywords level2
  */
 public class XPathQueryLevel2Test extends AbstractQueryLevel2Test {

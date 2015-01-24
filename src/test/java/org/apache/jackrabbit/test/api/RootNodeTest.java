@@ -28,7 +28,7 @@ import javax.jcr.Session;
  *
  * @test
  * @sources RootNodeTest.java
- * @executeClass org.apache.jackrabbit.test.api.RootNodeTest
+ * @executeClass org.apache.RootNodeTest
  * @keywords level1
  */
 public class RootNodeTest extends AbstractJCRTest {

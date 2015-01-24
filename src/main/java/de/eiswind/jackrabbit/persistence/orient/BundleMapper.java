@@ -1,8 +1,6 @@
 package de.eiswind.jackrabbit.persistence.orient;
 
 import com.orientechnologies.orient.core.db.record.ODatabaseRecord;
-import com.orientechnologies.orient.core.db.record.OIdentifiable;
-import com.orientechnologies.orient.core.index.OIndex;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import org.apache.commons.io.IOUtils;
@@ -21,26 +19,24 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 
 /**
- * (C) 2013 by Thomas Kratz
- *  this is experimental code. if you reuse it, you do at your own risk
- *  if you modify and/or or republish it, you must publish the original authors name with your source code.
- */
-
-/**
- * Takes care of mapping the NodePropBundles to OrientDB Documents and back
+ * Takes care of mapping the NodePropBundles to OrientDB Documents and back.
  */
 public class BundleMapper {
 
-    public static final String VALUE = "value";
+    private static final String VALUE = "value";
     private static Logger log = LoggerFactory.getLogger(BundleMapper.class);
 
-    static final NodeId NULL_PARENT_ID =
-            new NodeId("bb4e9d10-d857-11df-937b-0800200c9a66");
+    static final NodeId NULL_PARENT_ID = new NodeId("bb4e9d10-d857-11df-937b-0800200c9a66");
 
-    private static final long minBlobSize = 1024;
+    private static final long MIN_BLOB_SIZE = 1024;
 
     private ODocument doc;
     private ODatabaseRecord database;
@@ -48,16 +44,31 @@ public class BundleMapper {
     private String bundleClassName;
     private BinaryFileSystemHelper fileSystem;
 
-    public BundleMapper(ODocument doc, ODatabaseRecord database, String bundleClassName, BinaryFileSystemHelper fileSystem) {
-        this.bundleClassName = bundleClassName;
+    /**
+     * create a mapper.
+     *
+     * @param pdoc             the document
+     * @param pdatabase        the db
+     * @param pbundleClassName the classname
+     * @param pfileSystem      the filesystem
+     */
+    public BundleMapper(final ODocument pdoc, final ODatabaseRecord pdatabase,
+                        final String pbundleClassName, final BinaryFileSystemHelper pfileSystem) {
+        this.bundleClassName = pbundleClassName;
 
-        this.doc = doc;
-        this.database = database;
-        this.fileSystem = fileSystem;
+        this.doc = pdoc;
+        this.database = pdatabase;
+        this.fileSystem = pfileSystem;
     }
 
-    public void writePhase1(NodePropBundle _bundle) throws IOException {
-        this.bundle = _bundle;
+    /**
+     * writes a bundle to a document.
+     *
+     * @param pbundle the bundle
+     * @throws IOException on io.
+     */
+    public final void writePhase1(final NodePropBundle pbundle) throws IOException {
+        this.bundle = pbundle;
         doc.field("primaryType", writeName(bundle.getNodeTypeName()), OType.EMBEDDED);
         NodeId parentId = bundle.getParentId();
         if (parentId == null) {
@@ -98,28 +109,45 @@ public class BundleMapper {
         doc.field("children", childDocs, OType.EMBEDDEDLIST);
     }
 
-    private ODocument writeName(Name name) {
+    /**
+     * writes the name.
+     *
+     * @param name the name
+     * @return the doc
+     */
+    private ODocument writeName(final Name name) {
         ODocument nDoc = database.newInstance();
         nDoc.field("local", name.getLocalName());
         nDoc.field("uri", name.getNamespaceURI());
         return nDoc;
     }
 
-    private Name readName(ODocument nDoc) {
+    /**
+     * reads the name.
+     *
+     * @param nDoc the doc
+     * @return the name
+     */
+    private Name readName(final ODocument nDoc) {
         String local = nDoc.field("local", OType.STRING);
         String uri = nDoc.field("uri", OType.STRING);
         return NameFactoryImpl.getInstance().create(uri, local);
 
     }
 
-    public NodePropBundle read() {
+    /**
+     * reads a bundle from the doc.
+     *
+     * @return the bundle.
+     */
+    public final NodePropBundle read() {
         String uuid = doc.field("uuid", OType.STRING);
         bundle = new NodePropBundle(NodeId.valueOf(uuid));
 
         String parentUUID = doc.field("parentuuid", OType.STRING);
         NodeId parentId = NodeId.valueOf(parentUUID);
         if (NULL_PARENT_ID.equals(parentId)) {
-           bundle.setParentId(null);
+            bundle.setParentId(null);
         } else {
 
             bundle.setParentId(parentId);
@@ -155,7 +183,7 @@ public class BundleMapper {
         List<ODocument> sharedDocs = doc.field("sharedSet", OType.EMBEDDEDLIST);
         Set<NodeId> sharedSet = new HashSet<NodeId>();
         for (ODocument sharedDoc : sharedDocs) {
-            String shUuid = doc.field("uuid", OType.STRING);
+            String shUuid = sharedDoc.field("uuid", OType.STRING);
             NodeId shId = NodeId.valueOf(shUuid);
             sharedSet.add(shId);
         }
@@ -165,9 +193,17 @@ public class BundleMapper {
         return bundle;
     }
 
-    private NodePropBundle.PropertyEntry readProperty(ODocument pDoc, NodePropBundle _bundle) {
+    /**
+     * reads a property.
+     *
+     * @param pDoc    the doc
+     * @param pbundle the bundle
+     * @return the propertyentry
+     */
+    private NodePropBundle.PropertyEntry readProperty(final ODocument pDoc, final NodePropBundle pbundle) {
         ODocument nameDoc = pDoc.field("name", OType.EMBEDDED);
-        NodePropBundle.PropertyEntry entry = new NodePropBundle.PropertyEntry(new PropertyId(_bundle.getId(), readName(nameDoc)));
+        NodePropBundle.PropertyEntry entry =
+                new NodePropBundle.PropertyEntry(new PropertyId(pbundle.getId(), readName(nameDoc)));
         Boolean multiValued = pDoc.field("multiValued", OType.BOOLEAN);
         entry.setMultiValued(multiValued);
         List<InternalValue> values = new ArrayList<InternalValue>();
@@ -181,12 +217,12 @@ public class BundleMapper {
                         if (embedded) {
                             values.add(InternalValue.create((byte[]) vDoc.field("value", OType.BINARY)));
                         } else {
-                            try{
+                            try {
 
                                 InputStream in = fileSystem.read(vDoc.field("value", OType.STRING));
                                 values.add(InternalValue.create(in));
-                            } catch( RepositoryException x){
-                               log.error("Failed to read blob",x);
+                            } catch (RepositoryException x) {
+                                log.error("Failed to read blob", x);
                             }
                         }
                         break;
@@ -223,14 +259,20 @@ public class BundleMapper {
                 }
             }
         }
-        if(values.size()==0){
+        if (values.size() == 0) {
             log.error("ill property here");
         }
-        entry.setValues(values.toArray(new InternalValue[]{}));
+        entry.setValues(values.toArray(new InternalValue[values.size()]));
         return entry;
     }
 
-    private ODocument writeProperty(NodePropBundle.PropertyEntry state) throws IOException {
+    /**
+     * writes a property.
+     * @param state he property
+     * @return the doc
+     * @throws IOException on io
+     */
+    private ODocument writeProperty(final NodePropBundle.PropertyEntry state) throws IOException {
         ODocument propDoc = database.newInstance();
         propDoc.field("name", writeName(state.getName()), OType.EMBEDDED);
         propDoc.field("multiValued", state.isMultiValued());
@@ -247,8 +289,8 @@ public class BundleMapper {
 
                         long size = val.getLength();
 
-                        valDoc.field("embedded", size < minBlobSize);
-                        if (size < minBlobSize) {
+                        valDoc.field("embedded", size < MIN_BLOB_SIZE);
+                        if (size < MIN_BLOB_SIZE) {
                             ByteArrayOutputStream out = new ByteArrayOutputStream((int) size);
                             IOUtils.copy(val.getStream(), out);
                             valDoc.field(VALUE, out.toByteArray(), OType.BINARY);
@@ -290,8 +332,7 @@ public class BundleMapper {
                         valDoc.field(VALUE, val.toString());
                 }
             } catch (RepositoryException x) {
-                String msg = "Error while storing value. id="
-                        + state.getId() + " idx=" + i + " value=" + val;
+                String msg = "Error while storing value. id=" + state.getId() + " idx=" + i + " value=" + val;
                 log.error(msg, x);
                 throw new IOException(msg, x);
             }
@@ -303,37 +344,28 @@ public class BundleMapper {
     }
 
 
+//    protected synchronized ODocument createChild(NodePropBundle.ChildNodeEntry child) {
+//        try {
+//            ODocument doc = null;
+//
+//            doc = new ODocument(bundleClassName);
+//            doc.field("primaryType", writeName(child.getName()), OType.EMBEDDED);
+//            NodeId parentId = bundle.getId();
+//            if (parentId == null) {
+//                parentId = NULL_PARENT_ID;
+//            }
+//            doc.field("parentuuid", parentId.toString());
+//            doc.field("uuid", child.getId().toString());
+//
+//            doc.save();
+//            return doc;
+//
+//        } catch (Exception e) {
+//            String msg = "failed to write bundle: " + bundle.getId();
+//            log.error(msg, e);
+//            return null;
+//        }
+//    }
 
-    protected synchronized ODocument createChild(NodePropBundle.ChildNodeEntry child) {
-        try {
-            ODocument doc = null;
 
-            doc = new ODocument(bundleClassName);
-            doc.field("primaryType", writeName(child.getName()), OType.EMBEDDED);
-            NodeId parentId = bundle.getId();
-            if (parentId == null) {
-                parentId = NULL_PARENT_ID;
-            }
-            doc.field("parentuuid", parentId.toString());
-            doc.field("uuid", child.getId().toString());
-
-            doc.save();
-            return doc;
-
-        } catch (Exception e) {
-            String msg = "failed to write bundle: " + bundle.getId();
-            log.error(msg, e);
-            return null;
-        }
-    }
-
-    private ODocument loadBundleDoc(String uuid) {
-        OIndex<OIdentifiable> index = (OIndex<OIdentifiable>) database.getMetadata().getIndexManager().getIndex(bundleClassName + ".uuid");
-        OIdentifiable id = index.get(uuid);
-        if (id != null) {
-            return id.getRecord();
-        } else {
-            return null;
-        }
-    }
 }

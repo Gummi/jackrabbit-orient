@@ -28,7 +28,7 @@ import javax.jcr.nodetype.ConstraintViolationException;
  *
  * @test
  * @sources VersionStorageTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.VersionStorageTest
+ * @executeClass org.apache.VersionStorageTest
  * @keywords versioning
  */
 public class VersionStorageTest extends AbstractVersionTest {

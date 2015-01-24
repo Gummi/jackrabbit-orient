@@ -42,7 +42,7 @@ import javax.jcr.NodeIterator;
  *
  * @test
  * @sources RestoreTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.RestoreTest
+ * @executeClass org.apache.RestoreTest
  * @keywords versioning
  */
 public class RestoreTest extends AbstractVersionTest {

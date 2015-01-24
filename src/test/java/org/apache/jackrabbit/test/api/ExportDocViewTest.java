@@ -20,7 +20,6 @@ import org.apache.jackrabbit.test.AbstractJCRTest;
 import org.apache.jackrabbit.test.XMLChar;
 
 import org.xml.sax.SAXException;
-import org.xml.sax.ContentHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Attr;
@@ -68,7 +67,7 @@ import java.io.StringWriter;
  *
  * @test
  * @sources ExportDocViewTest.java
- * @executeClass org.apache.jackrabbit.test.api.ExportDocViewTest
+ * @executeClass org.apache.ExportDocViewTest
  * @keywords level1
  */
 public class ExportDocViewTest extends AbstractJCRTest {

@@ -37,7 +37,7 @@ import org.apache.jackrabbit.test.NotExecutableException;
  *
  * @test
  * @sources LockingTest.java
- * @executeClass org.apache.jackrabbit.test.api.observation.LockingTest
+ * @executeClass org.apache.LockingTest
  * @keywords observation locking
  */
 public class LockingTest extends AbstractObservationTest {

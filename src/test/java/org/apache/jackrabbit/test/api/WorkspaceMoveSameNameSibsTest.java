@@ -29,7 +29,7 @@ import javax.jcr.RepositoryException;
  *
  * @test
  * @sources WorkspaceMoveSameNameSibsTest.java
- * @executeClass org.apache.jackrabbit.test.api.WorkspaceMoveSameNameSibsTest
+ * @executeClass org.apache.WorkspaceMoveSameNameSibsTest
  * @keywords level2
  */
 public class WorkspaceMoveSameNameSibsTest extends AbstractWorkspaceSameNameSibsTest {

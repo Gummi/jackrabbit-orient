@@ -36,7 +36,7 @@ import javax.jcr.PathNotFoundException;
  *
  * @test
  * @sources SetValueBooleanTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetValueBooleanTest
+ * @executeClass org.apache.SetValueBooleanTest
  * @keywords level2
  */
 public class SetValueBooleanTest extends AbstractJCRTest {

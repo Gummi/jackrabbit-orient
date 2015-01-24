@@ -38,7 +38,7 @@ import java.util.List;
  *
  * @test
  * @sources RemoveVersionTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.RemoveVersionTest
+ * @executeClass org.apache.RemoveVersionTest
  * @keywords versioning
  */
 public class RemoveVersionTest extends AbstractVersionTest {

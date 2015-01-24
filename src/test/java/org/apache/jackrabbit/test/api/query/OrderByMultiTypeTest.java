@@ -34,7 +34,7 @@ import javax.jcr.query.QueryResult;
  * @tck.config propertyname2 name of a single value long property.
  * @test
  * @sources OrderByMultiTypeTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.OrderByMultiTypeTest
+ * @executeClass org.apache.OrderByMultiTypeTest
  * @keywords level2
  */
 public class OrderByMultiTypeTest extends AbstractOrderByTest {

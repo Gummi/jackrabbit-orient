@@ -28,7 +28,7 @@ import javax.jcr.version.VersionManager;
  *
  * @test
  * @sources OnParentVersionInitializeTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.OnParentVersionInitializeTest
+ * @executeClass org.apache.OnParentVersionInitializeTest
  * @keywords versioning
  */
 public class OnParentVersionInitializeTest extends AbstractOnParentVersionTest {

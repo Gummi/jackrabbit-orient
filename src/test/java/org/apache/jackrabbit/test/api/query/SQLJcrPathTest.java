@@ -29,7 +29,7 @@ import java.util.Arrays;
  *
  * @test
  * @sources SQLJcrPathTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.SQLJcrPathTest
+ * @executeClass org.apache.SQLJcrPathTest
  * @keywords sql
  */
 public class SQLJcrPathTest extends AbstractQueryTest {

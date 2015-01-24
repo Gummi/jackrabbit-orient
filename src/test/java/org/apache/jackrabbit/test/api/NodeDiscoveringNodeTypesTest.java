@@ -34,7 +34,7 @@ import java.util.NoSuchElementException;
  *
  * @test
  * @sources NodeDiscoveringNodeTypesTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeDiscoveringNodeTypesTest
+ * @executeClass org.apache.NodeDiscoveringNodeTypesTest
  * @keywords level1
  */
 public class NodeDiscoveringNodeTypesTest extends AbstractJCRTest {

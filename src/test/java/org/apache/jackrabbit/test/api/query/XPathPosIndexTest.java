@@ -38,7 +38,7 @@ import javax.jcr.query.QueryResult;
  *
  * @test
  * @sources XPathPosIndexTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.XPathPosIndexTest
+ * @executeClass org.apache.XPathPosIndexTest
  * @keywords level1
  */
 public class XPathPosIndexTest extends AbstractQueryTest {

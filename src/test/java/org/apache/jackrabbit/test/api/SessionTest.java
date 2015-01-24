@@ -37,7 +37,7 @@ import javax.jcr.lock.LockException;
  *
  * @test
  * @sources SessionTest.java
- * @executeClass org.apache.jackrabbit.test.api.SessionTest
+ * @executeClass org.apache.SessionTest
  * @keywords level2
  */
 public class SessionTest extends AbstractJCRTest {

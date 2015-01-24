@@ -49,19 +49,17 @@ public class PersistenceManagerTest extends TestCase {
 
     private File directory;
 
-    private File database;
+
 
     protected void setUp() throws Exception {
         directory = File.createTempFile("jackrabbit-persistence-", "-test");
         directory.delete();
         directory.mkdirs();
 
-        database = File.createTempFile("jackrabbit-persistence-", "-derby");
-        database.delete();
+
     }
 
     protected void tearDown() throws Exception {
-        FileUtils.forceDelete(database);
         FileUtils.forceDelete(directory);
     }
 

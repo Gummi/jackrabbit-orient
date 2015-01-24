@@ -42,7 +42,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Reader;
@@ -57,7 +56,7 @@ import java.io.StringReader;
  *
  * @test
  * @sources SerializationTest.java
- * @executeClass org.apache.jackrabbit.test.api.SerializationTest
+ * @executeClass org.apache.SerializationTest
  * @keywords level2
  */
 public class SerializationTest extends AbstractJCRTest {

@@ -30,7 +30,7 @@ import java.util.Iterator;
  *
  * @test
  * @sources MergeNodeIteratorTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.MergeNodeIteratorTest
+ * @executeClass org.apache.MergeNodeIteratorTest
  * @keywords versioning
  */
 public class MergeNodeIteratorTest extends AbstractMergeTest {

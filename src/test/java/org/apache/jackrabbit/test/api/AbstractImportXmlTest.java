@@ -22,7 +22,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Attr;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;

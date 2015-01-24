@@ -29,7 +29,7 @@ import javax.jcr.Session;
  *
  * @test
  * @sources PredicatesTest.java
- * @executeClass org.apache.jackrabbit.test.api.query.PredicatesTest
+ * @executeClass org.apache.PredicatesTest
  * @keywords level1
  */
 public class PredicatesTest extends AbstractQueryTest {

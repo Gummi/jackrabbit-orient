@@ -42,7 +42,7 @@ import java.io.FileNotFoundException;
  *
  * @test
  * @sources ExportSysViewTest.java
- * @executeClass org.apache.jackrabbit.test.api.ExportSysViewTest
+ * @executeClass org.apache.ExportSysViewTest
  * @keywords level1
  */
 public class ExportSysViewTest extends AbstractJCRTest {

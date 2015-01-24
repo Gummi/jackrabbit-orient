@@ -30,7 +30,7 @@ import javax.jcr.PropertyType;
  *
  * @test
  * @sources UndefinedPropertyTest.java
- * @executeClass org.apache.jackrabbit.test.api.UndefinedPropertyTest
+ * @executeClass org.apache.UndefinedPropertyTest
  * @keywords level1
  */
 public class UndefinedPropertyTest extends AbstractJCRTest {

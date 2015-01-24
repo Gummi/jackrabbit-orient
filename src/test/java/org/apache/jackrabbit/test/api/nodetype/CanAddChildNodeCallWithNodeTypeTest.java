@@ -33,7 +33,7 @@ import org.apache.jackrabbit.test.NotExecutableException;
  *
  * @test
  * @sources CanAddChildNodeCallWithNodeTypeTest.java
- * @executeClass org.apache.jackrabbit.test.api.nodetype.CanAddChildNodeCallWithNodeTypeTest
+ * @executeClass org.apache.CanAddChildNodeCallWithNodeTypeTest
  * @keywords level1
  */
 public class CanAddChildNodeCallWithNodeTypeTest extends AbstractJCRTest {

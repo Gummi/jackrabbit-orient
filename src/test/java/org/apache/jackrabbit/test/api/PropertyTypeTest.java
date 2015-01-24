@@ -33,7 +33,7 @@ import javax.jcr.Property;
  *
  * @test
  * @sources PropertyTypeTest.java
- * @executeClass org.apache.jackrabbit.test.api.PropertyTypeTest
+ * @executeClass org.apache.PropertyTypeTest
  * @keywords level1
  */
 public class PropertyTypeTest extends AbstractJCRTest {

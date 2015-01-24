@@ -35,7 +35,7 @@ import java.util.List;
  *
  * @test
  * @sources PropertyAddedTest.java
- * @executeClass org.apache.jackrabbit.test.api.observation.PropertyAddedTest
+ * @executeClass org.apache.PropertyAddedTest
  * @keywords observation
  */
 public class PropertyAddedTest extends AbstractObservationTest {

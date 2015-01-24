@@ -33,7 +33,7 @@ import javax.jcr.nodetype.NodeType;
  *
  * @test
  * @sources NodeCanAddMixinTest.java
- * @executeClass org.apache.jackrabbit.test.api.NodeCanAddMixinTest
+ * @executeClass org.apache.NodeCanAddMixinTest
  * @keywords level2
  */
 public class NodeCanAddMixinTest extends AbstractJCRTest {

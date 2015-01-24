@@ -29,7 +29,7 @@ import javax.jcr.version.VersionManager;
  *
  * @test
  * @sources MergeDoneMergeTest.java
- * @executeClass org.apache.jackrabbit.test.api.version.MergeDoneMergeTest
+ * @executeClass org.apache.MergeDoneMergeTest
  * @keywords versioning
  */
 public class MergeDoneMergeTest extends AbstractMergeTest {

@@ -20,7 +20,6 @@ import org.apache.jackrabbit.test.NotExecutableException;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.jcr.PropertyType;
 import javax.jcr.Value;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.observation.Event;
@@ -38,7 +37,7 @@ import javax.jcr.observation.Event;
  *
  * @test
  * @sources PropertyChangedTest.java
- * @executeClass org.apache.jackrabbit.test.api.observation.PropertyChangedTest
+ * @executeClass org.apache.PropertyChangedTest
  * @keywords observation
  */
 public class PropertyChangedTest extends AbstractObservationTest {

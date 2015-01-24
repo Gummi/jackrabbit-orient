@@ -34,7 +34,7 @@ import javax.jcr.nodetype.ConstraintViolationException;
  *
  * @test
  * @sources WorkspaceCopyBetweenWorkspacesTest.java
- * @executeClass org.apache.jackrabbit.test.api.WorkspaceCopyBetweenWorkspacesTest
+ * @executeClass org.apache.WorkspaceCopyBetweenWorkspacesTest
  * @keywords level2
  */
 public class WorkspaceCopyBetweenWorkspacesTest extends AbstractWorkspaceCopyBetweenTest {

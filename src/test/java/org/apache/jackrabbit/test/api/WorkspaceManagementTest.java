@@ -18,7 +18,6 @@ package org.apache.jackrabbit.test.api;
 
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
-import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.Workspace;
 import javax.jcr.NoSuchWorkspaceException;
 

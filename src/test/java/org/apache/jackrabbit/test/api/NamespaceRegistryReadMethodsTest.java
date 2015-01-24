@@ -35,7 +35,7 @@ import java.util.Arrays;
  *
  * @test
  * @sources NamespaceRegistryReadMethodsTest.java
- * @executeClass org.apache.jackrabbit.test.api.NamespaceRegistryReadMethodsTest
+ * @executeClass org.apache.NamespaceRegistryReadMethodsTest
  * @keywords level1
  */
 public class NamespaceRegistryReadMethodsTest extends AbstractJCRTest {

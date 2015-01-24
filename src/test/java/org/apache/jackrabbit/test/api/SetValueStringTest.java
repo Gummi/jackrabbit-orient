@@ -41,7 +41,7 @@ import java.util.ArrayList;
  *
  * @test
  * @sources SetValueStringTest.java
- * @executeClass org.apache.jackrabbit.test.api.SetValueStringTest
+ * @executeClass org.apache.SetValueStringTest
  * @keywords level2
  */
 public class SetValueStringTest extends AbstractJCRTest {
