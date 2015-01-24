@@ -68,7 +68,7 @@ public class PersistenceManagerTest extends TestCase {
         manager.setUrl("memory:graph");
         manager.setUser("admin");
         manager.setPass("admin");
-        manager.setObjectPrefix("Test");
+        manager.setSchemaObjectPrefix("Test");
         manager.setCreateDB(true);
         assertPersistenceManager(manager);
     }
