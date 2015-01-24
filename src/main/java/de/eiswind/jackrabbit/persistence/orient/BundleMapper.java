@@ -47,11 +47,12 @@ public class BundleMapper {
     /**
      * create a mapper.
      *
-     * @param pdoc             the document
-     * @param pdatabase        the db
-     * @param pfileSystem      the filesystem
+     * @param pdoc        the document
+     * @param pdatabase   the db
+     * @param pfileSystem the filesystem
      */
-    public BundleMapper(final ODocument pdoc, final ODatabaseRecord pdatabase, final BinaryFileSystemHelper pfileSystem) {
+    public BundleMapper(final ODocument pdoc, final ODatabaseRecord pdatabase,
+                        final BinaryFileSystemHelper pfileSystem) {
 
         this.doc = pdoc;
         this.database = pdatabase;
@@ -199,8 +200,8 @@ public class BundleMapper {
      */
     private NodePropBundle.PropertyEntry readProperty(final ODocument pDoc, final NodePropBundle pbundle) {
         ODocument nameDoc = pDoc.field("name", OType.EMBEDDED);
-        NodePropBundle.PropertyEntry entry =
-                new NodePropBundle.PropertyEntry(new PropertyId(pbundle.getId(), readName(nameDoc)));
+        NodePropBundle.PropertyEntry entry = new NodePropBundle.PropertyEntry(new PropertyId(pbundle.getId(),
+                readName(nameDoc)));
         Boolean multiValued = pDoc.field("multiValued", OType.BOOLEAN);
         entry.setMultiValued(multiValued);
         List<InternalValue> values = new ArrayList<InternalValue>();
@@ -265,6 +266,7 @@ public class BundleMapper {
 
     /**
      * writes a property.
+     *
      * @param state he property
      * @return the doc
      * @throws IOException on io

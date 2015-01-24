@@ -466,7 +466,8 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
                     vertex = loadBundleDoc(bundle.getId().toString());
                 }
                 if (vertex == null) {
-                    throw new IllegalStateException("FATAL: Tried to update non existing bundle" + bundle.getId().toString());
+                    throw new IllegalStateException("FATAL: Tried to update non existing bundle"
+                            + bundle.getId().toString());
                 }
                 BundleMapper mapper = new BundleMapper(vertex, database, fileSystem);
                 mapper.writePhase1(bundle);
