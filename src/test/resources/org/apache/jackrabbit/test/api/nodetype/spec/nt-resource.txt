@@ -1,0 +1,22 @@
+NodeTypeName
+  nt:resource
+Supertypes
+  nt:base
+  mix:lastModified
+  mix:mimeType
+  mix:referenceable
+IsMixin
+  false
+HasOrderableChildNodes
+  false
+PrimaryItemName
+  jcr:data
+PropertyDefinition
+  Name jcr:data
+  RequiredType BINARY
+  DefaultValues null
+  AutoCreated false
+  Mandatory true
+  OnParentVersion COPY
+  Protected false
+  Multiple false
