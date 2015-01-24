@@ -41,7 +41,7 @@ public class BundleMapper {
     private ODocument doc;
     private ODatabaseRecord database;
     private NodePropBundle bundle;
-    private String bundleClassName;
+
     private BinaryFileSystemHelper fileSystem;
 
     /**
@@ -49,12 +49,9 @@ public class BundleMapper {
      *
      * @param pdoc             the document
      * @param pdatabase        the db
-     * @param pbundleClassName the classname
      * @param pfileSystem      the filesystem
      */
-    public BundleMapper(final ODocument pdoc, final ODatabaseRecord pdatabase,
-                        final String pbundleClassName, final BinaryFileSystemHelper pfileSystem) {
-        this.bundleClassName = pbundleClassName;
+    public BundleMapper(final ODocument pdoc, final ODatabaseRecord pdatabase, final BinaryFileSystemHelper pfileSystem) {
 
         this.doc = pdoc;
         this.database = pdatabase;

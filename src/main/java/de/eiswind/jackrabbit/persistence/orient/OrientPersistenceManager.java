@@ -83,7 +83,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     private String url;
     private String user = "admin";
     private String pass = "admin";
-    private boolean createDB = true;
+
 
     private FileSystem itemFs;
 
@@ -395,7 +395,7 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
                     return null;
                 }
 
-                BundleMapper mapper = new BundleMapper(doc, database, bundleClassName, fileSystem);
+                BundleMapper mapper = new BundleMapper(doc, database, fileSystem);
                 NodePropBundle bundle = mapper.read();
                 return bundle;
             });
@@ -466,10 +466,9 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
                     vertex = loadBundleDoc(bundle.getId().toString());
                 }
                 if (vertex == null) {
-                    throw new IllegalStateException("FATAL: Tried to update non existing bundle" +
-                            bundle.getId().toString());
+                    throw new IllegalStateException("FATAL: Tried to update non existing bundle" + bundle.getId().toString());
                 }
-                BundleMapper mapper = new BundleMapper(vertex, database, bundleClassName, fileSystem);
+                BundleMapper mapper = new BundleMapper(vertex, database, fileSystem);
                 mapper.writePhase1(bundle);
                 vertex.save();
                 NodeId id = bundle.getId();
@@ -670,16 +669,6 @@ public class OrientPersistenceManager extends AbstractBundlePersistenceManager {
     public final String toString() {
         return name;
     }
-
-    /**
-     * should the db be created?
-     *
-     * @param pcreateDB wether the db should be created.
-     */
-    public final void setCreateDB(final boolean pcreateDB) {
-        this.createDB = pcreateDB;
-    }
-
 
     /**
      * {@inheritDoc}
